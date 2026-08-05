@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import multiprocessing as mp
 from multiprocessing.connection import wait as mp_wait
 import os
@@ -25,6 +26,7 @@ if str(STARVLA_ROOT) not in sys.path:
     sys.path.insert(0, str(STARVLA_ROOT))
 
 from examples.Robotwin.eval_files.model2robotwin_interface import (  # noqa: E402
+    flatten_robotwin_endpose_state,
     get_model,
 )
 from examples.Robotwin.eval_files.robotwin_eval_common import (  # noqa: E402
@@ -648,6 +650,44 @@ def run_batched_eval(usr_args: dict[str, Any]) -> int:
             "obs_wait_sec": 0.0,
             "infer_wait_sec": 0.0,
         }
+        trace_enabled = normalize_bool_env(os.getenv("ROBOTWIN_TRACE_ACTION_STATE"), default=False)
+        trace_path = save_dir / "action_state_trace.jsonl"
+
+        def _trace_array(value: Any) -> Optional[list[float]]:
+            if value is None:
+                return None
+            array = np.asarray(value, dtype=np.float32).reshape(-1)
+            return array.tolist()
+
+        def write_action_trace(
+            *,
+            slot_id: int,
+            pending: dict[str, Any],
+            action: Any,
+            model_query: bool,
+        ) -> None:
+            if not trace_enabled:
+                return
+            snapshot = model.get_action_trace_snapshot(slot_id=slot_id)
+            raw_actions = snapshot.get("raw_actions")
+            record = {
+                "slot_id": int(slot_id),
+                "episode_id": int(pending["episode_id"]),
+                "seed": int(pending["seed"]),
+                "sim_step": int(pending["sim_step"]),
+                "model_query": bool(model_query),
+                "policy_use_state": bool(getattr(model, "use_state", False)),
+                "policy_input_state": _trace_array(pending.get("policy_input_state")),
+                "joint_position": _trace_array(pending.get("joint_position")),
+                "endpose_state": _trace_array(pending.get("endpose_state")),
+                "action": _trace_array(action),
+                "action_cursor": int(snapshot["action_cursor"]),
+                "executed_steps": int(snapshot["executed_steps"]),
+            }
+            if model_query and raw_actions is not None:
+                record["action_chunk"] = np.asarray(raw_actions, dtype=np.float32).tolist()
+            with open(trace_path, "a", encoding="utf-8") as trace_file:
+                trace_file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
         def detach_slot(slot_id: int, *, mode: str) -> None:
             conn = parent_conns.pop(slot_id, None)
@@ -801,6 +841,15 @@ def run_batched_eval(usr_args: dict[str, Any]) -> int:
                     perf_counters["obs_wait_sec"] += time.perf_counter() - observation_request.requested_at
                     instruction = observation_request.instruction
                     observation = message["observation"]
+                    example = model.build_example(instruction, observation)
+                    trace_pending = {
+                        "seed": int(message["seed"]),
+                        "episode_id": int(message["episode_id"]),
+                        "sim_step": int(message["step"]),
+                        "policy_input_state": example.get("state"),
+                        "joint_position": observation.get("joint_action", {}).get("vector"),
+                        "endpose_state": flatten_robotwin_endpose_state(observation),
+                    }
                     requires_query = _observation_requires_model_query(
                         model=model,
                         slot_id=slot_id,
@@ -812,15 +861,24 @@ def run_batched_eval(usr_args: dict[str, Any]) -> int:
                             "slot_id": slot_id,
                             "seed": int(message["seed"]),
                             "episode_id": int(message["episode_id"]),
-                            "example": model.build_example(instruction, observation),
+                            "sim_step": int(message["step"]),
+                            "example": example,
+                            **trace_pending,
                         }
                         slot_state[slot_id]["mode"] = "waiting_infer"
                         continue
                     perf_counters["cached_action_hits"] += 1
+                    action = model.step_cached(slot_id=slot_id, task_description=instruction)
+                    write_action_trace(
+                        slot_id=slot_id,
+                        pending=trace_pending,
+                        action=action,
+                        model_query=False,
+                    )
                     parent_conns[slot_id].send(
                         {
                             "cmd": "action",
-                            "action": model.step_cached(slot_id=slot_id, task_description=instruction),
+                            "action": action,
                             "seed": int(message["seed"]),
                         }
                     )
@@ -877,6 +935,12 @@ def run_batched_eval(usr_args: dict[str, Any]) -> int:
                 perf_counters["infer_wait_sec"] += time.perf_counter() - infer_t0
                 perf_counters["model_queries"] += len(examples)
                 for slot_id, action in zip(slot_ids, actions):
+                    write_action_trace(
+                        slot_id=slot_id,
+                        pending=pending_examples[slot_id],
+                        action=action,
+                        model_query=True,
+                    )
                     parent_conns[slot_id].send(
                         {
                             "cmd": "action",

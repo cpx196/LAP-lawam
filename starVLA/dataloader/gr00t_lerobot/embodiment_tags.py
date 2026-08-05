@@ -99,6 +99,8 @@ ROBOT_TYPE_TO_EMBODIMENT_TAG = {
     "fractal": EmbodimentTag.OXE_RT1,
     "demo_sim_franka_delta_joints": EmbodimentTag.FRANKA,
     "custom_robot_config": EmbodimentTag.NEW_EMBODIMENT,
+    "so_follower": EmbodimentTag.NEW_EMBODIMENT,
+    "so101_eef_delta": EmbodimentTag.NEW_EMBODIMENT,
     "fold_towel": EmbodimentTag.NEW_EMBODIMENT,
     "gr1": EmbodimentTag.GR1,
     "gr1_joint_eef": EmbodimentTag.GR1,

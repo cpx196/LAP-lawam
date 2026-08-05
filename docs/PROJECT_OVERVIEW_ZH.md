@@ -15,7 +15,8 @@
 2. 将 VLM 的 284 个语义 token 替换为 LAP10V3 token 后，离线 token/action 指标可以改善，但不能据此推断闭环成功。
 3. 当前最佳无 VLM 闭环基线是 T7：clean `1/5`、randomized `3/5`、总计 `4/10`。
 4. 直接真实动作 AR 微调（T8）得到 clean `1/5`、randomized `0/5`、总计 `1/10`。AR-A step 1000 与 AR-B step 2000 相同，问题已定位到 Expert-only AR 更新，而不是 LAP9–10 解冻。
-5. 正在运行的 FlowOnly 实验从 T7 恢复、冻结 LAP/LaWM、只更新 Expert，并删除自定义 action 加权、reconstruction 和 delta loss，用于验证此前退化是否来自训练目标而非模型容量。
+5. FlowOnly 实验从 T7 恢复、冻结 LAP/LaWM、只更新 Expert，最终离线 action MSE 小幅改善，但 RoboTwin 3+3 仅 `1/6`，未超过 T7 的同 seed `2/6`。
+6. 当前不再继续修补串联的 LAP7–10；保留 LAP6→LaWM，并计划单独训练一个 SEC284 模块替代 VLM 给 Action Expert 的 284-token 条件。
 
 ## 2. 任务、数据与评估口径
 
@@ -96,7 +97,7 @@ DINO / LAM vision encoder（冻结）
 | T6 | LAP10V3 scratch | 四层 284-token 条件器 | 离线有效，闭环不稳定 |
 | T7 | LAP10V3 + Expert joint | flow + token alignment | 闭环 `4/10`，当前无 VLM baseline |
 | T8 | AR-2000 | 全量真实 action；无 teacher | 闭环 `1/10`，低于 T7 |
-| T9（进行中） | FlowOnly-1000 | T7 初始化；冻结 LAP；仅官方 flow | 验证 AR 退化来源 |
+| T9 | FlowOnly-1000 | T7 初始化；冻结 LAP；仅官方 flow | 离线略好，闭环 `1/6`，未超过 T7 |
 
 ## 5. 已定位的风险
 
@@ -114,7 +115,7 @@ DINO / LAM vision encoder（冻结）
 4. `replan_steps=36` 会连续执行约 1.2 秒动作；精确放置中的小偏差可能在下一次观测前放大。
 5. 5+5 是快速诊断口径，仍有流采样随机性；重要结论应使用固定 policy noise 或更大样本复核。
 
-## 6. 当前运行实验：T9 FlowOnly-1000
+## 6. 已完成诊断：T9 FlowOnly-1000
 
 ```text
 初始化：T7 step 2000
@@ -137,16 +138,35 @@ outputs/lap10v3_ar_flowonly_task14_1000step/
 
 选择 checkpoint 的原则不是最低训练 loss，而是先在 T7 曾成功的 randomized seeds（`100001`、`100004`、`100006`）上做闭环筛选，再运行完整 5+5。
 
-## 7. 文档索引
+T9 已正常完成，最终 flow loss 约 `0.004960`。RoboTwin 3+3 为 clean `0/3`、randomized `1/3`，合计 `1/6`；T7 在相同 seed 子集为 `2/6`。固定同一 flow noise 的 128 样本离线检查中，T9 的 action MSE 为 `0.003641`，略好于 T7 的 `0.003820`。因此不应继续以离线 flow loss 作为 checkpoint 的主要选择依据。
+
+## 7. 下一版架构：LAP6 + SEC284
+
+```text
+三视角 RGB + 当前 EEF
+        ↓
+冻结 DINO 三视角 token [B,768,768]
+        ├── LAP6 → 32-D latent action → LaWM → visual subgoal
+        └── SEC284 → [B,284,768] → Action Expert
+```
+
+SEC284 是与 LAP6 并行的独立条件编码器，而不是 LAP7–10。建议用 284 个 learned query 经 4 层 Transformer decoder 直接 cross-attend 全部三视角 DINO token，同时融合当前 EEF，可选融合 detached LAP6 latent。预计参数量约 32–38M。
+
+训练分两步：
+
+1. 冻结 LAP6、LaWM 和 Action Expert，用离线缓存的 VLM `[284,768]` 条件训练 SEC284；部署时不需要 VLM。
+2. 保持 LAP6/LaWM 冻结，使用 RoboTwin 真实 action 监督联合调整 SEC284 和 Action Expert 后几层，并以闭环成功率而非 token MSE 选择 checkpoint。
+
+## 8. 文档索引
 
 | 文档 | 用途 |
 |---|---|
 | [timeline.md](../timeline.md) | 按时间排序的项目进展与当前状态 |
 | 本页 | 当前结构、数据口径、实验结论与下一步 |
 
-## 8. 推荐的后续顺序
+## 9. 推荐的后续顺序
 
-1. 完成 T9 FlowOnly-1000，保留所有 250-step checkpoint。
-2. 使用同一 RoboTwin seed 和固定 flow sampling 进行 checkpoint 筛选。
-3. 若 T9 能保住或超过 T7 的 `4/10`，再考虑小幅解冻 Expert 的局部模块；不要先解冻 LAP。
-4. 若 T9 仍退化，优先缩短 replan interval 并增加纠错/偏移状态数据，而不是盲目扩大 LAP 或延长训练。
+1. 保留 T7 作为当前无 VLM 的主 baseline，T8/T9 作为失败对照。
+2. 实现独立 SEC284，不再延续 LAP7–10 串联路线。
+3. 缓存 VLM 284-token teacher 输出，先完成 SEC284 表示预训练和离线检查。
+4. 在真实 action 监督下只小幅联合解冻 SEC284 与 Expert 后层，用固定 environment seed 和 policy flow noise 做配对闭环对比。

@@ -63,6 +63,7 @@ project-level status, chronology, and experiment evidence are maintained in:
 
 - [Project overview (Chinese)](docs/PROJECT_OVERVIEW_ZH.md)
 - [Experiment timeline](timeline.md)
+- [LAP10V3 experiment ledger (Chinese)](docs/LAP10V3_EXPERIMENT_LEDGER_ZH.md)
 
 These notes distinguish training/representation metrics from closed-loop
 RoboTwin success rates and record the exact evaluation protocol used for local

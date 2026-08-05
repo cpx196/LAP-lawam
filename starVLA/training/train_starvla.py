@@ -229,6 +229,8 @@ class VLATrainer(TrainerUtils):
 
         # training status tracking
         self.completed_steps = 0
+        self.vla_epoch_count = 0
+        self.vla_batches_consumed_in_epoch = 0
         self.total_batch_size = self._calculate_total_batch_size()
         trackers = list(getattr(self.config, "trackers", [])) if hasattr(self.config, "trackers") else []
         self.use_wandb = "wandb" in trackers if trackers else True
@@ -263,6 +265,7 @@ class VLATrainer(TrainerUtils):
                 )
             )
 
+        self._resume_training_state_if_requested()
         self._init_wandb()
 
     def _calculate_total_batch_size(self):
@@ -311,6 +314,7 @@ class VLATrainer(TrainerUtils):
                 checkpoint_path=pretrained_checkpoint,
                 load_pretrained_policy_flow=load_pretrained_policy_flow,
             )
+            self._initialize_action_head_from_embodiment()
             self.completed_steps = 0
             logger.info(
                 "Initialized model weights for finetune from `%s`; load_pretrained_policy_flow=%s; training starts from step 0.",
@@ -321,12 +325,138 @@ class VLATrainer(TrainerUtils):
             logger.info("No pretrained checkpoint provided. Starting training from scratch.")
             self.completed_steps = 0
 
+    def _initialize_action_head_from_embodiment(self):
+        source_id = getattr(
+            self.config.trainer,
+            "copy_action_head_source_embodiment_id",
+            None,
+        )
+        target_id = getattr(
+            self.config.trainer,
+            "copy_action_head_target_embodiment_id",
+            None,
+        )
+        if source_id is None and target_id is None:
+            return
+        if source_id is None or target_id is None:
+            raise ValueError(
+                "Both copy_action_head_source_embodiment_id and "
+                "copy_action_head_target_embodiment_id must be configured."
+            )
+
+        source_id = int(source_id)
+        target_id = int(target_id)
+        flow = self.model.policy_backend.flow
+        layers = {
+            "action_encoder.W1": flow.action_encoder.W1,
+            "action_encoder.W2": flow.action_encoder.W2,
+            "action_decoder.layer1": flow.action_decoder.layer1,
+            "action_decoder.layer2": flow.action_decoder.layer2,
+        }
+        with torch.no_grad():
+            for name, layer in layers.items():
+                if source_id < 0 or source_id >= layer.W.shape[0]:
+                    raise IndexError(f"Source embodiment id {source_id} is invalid for {name}.")
+                if target_id < 0 or target_id >= layer.W.shape[0]:
+                    raise IndexError(f"Target embodiment id {target_id} is invalid for {name}.")
+                layer.W[target_id].copy_(layer.W[source_id])
+                layer.b[target_id].copy_(layer.b[source_id])
+        logger.info(
+            "Initialized action encoder/decoder embodiment head %s from pretrained head %s.",
+            target_id,
+            source_id,
+        )
+
+    def _resolve_resume_training_state_path(self):
+        resume_path = getattr(self.config.trainer, "resume_from_training_state", None)
+        if not resume_path:
+            return None
+
+        resume_path = str(resume_path)
+        if resume_path.lower() == "latest":
+            candidates = []
+            if os.path.isdir(self.checkpoint_dir):
+                for name in os.listdir(self.checkpoint_dir):
+                    if name.startswith("steps_") and name.endswith("_training_state"):
+                        try:
+                            step = int(name[len("steps_") : -len("_training_state")])
+                        except ValueError:
+                            continue
+                        path = os.path.join(self.checkpoint_dir, name)
+                        if os.path.isdir(path):
+                            candidates.append((step, path))
+            if not candidates:
+                raise FileNotFoundError(f"No `*_training_state` checkpoint found in `{self.checkpoint_dir}`.")
+            candidates.sort(key=lambda item: item[0])
+            return candidates[-1][1]
+
+        return resume_path
+
+    def _resume_training_state_if_requested(self):
+        """Load full accelerator training state: model, optimizer, scheduler, RNG and completed step."""
+        resume_state_path = self._resolve_resume_training_state_path()
+        if not resume_state_path:
+            return
+        if not os.path.isdir(resume_state_path):
+            raise FileNotFoundError(f"Training-state checkpoint directory does not exist: `{resume_state_path}`")
+
+        self.accelerator.load_state(resume_state_path)
+        trainer_state_path = os.path.join(resume_state_path, "trainer_state.json")
+        if os.path.exists(trainer_state_path):
+            with open(trainer_state_path, "r", encoding="utf-8") as f:
+                trainer_state = json.load(f)
+            self.completed_steps = int(trainer_state.get("completed_steps", self.completed_steps))
+            self.vla_epoch_count = int(trainer_state.get("vla_epoch_count", 0))
+            self.vla_batches_consumed_in_epoch = int(
+                trainer_state.get("vla_batches_consumed_in_epoch", 0)
+            )
+        else:
+            logger.warning(
+                "Loaded accelerator state from `%s`, but `trainer_state.json` is missing; keep completed_steps=%s.",
+                resume_state_path,
+                self.completed_steps,
+            )
+
+        scheduler_path = os.path.join(resume_state_path, "scheduler.bin")
+        if os.path.isfile(scheduler_path):
+            scheduler_state = torch.load(scheduler_path, map_location="cpu", weights_only=True)
+            self.lr_scheduler.load_state_dict(scheduler_state)
+            logger.info("Restored LR scheduler state from `%s`.", scheduler_path)
+        elif self.completed_steps > 0:
+            # Legacy checkpoints saved model/optimizer/RNG but omitted the scheduler.
+            # Reconstruct its exact global-step position using the current run horizon.
+            step = int(self.completed_steps)
+            self.lr_scheduler.last_epoch = step
+            self.lr_scheduler._step_count = step + 1
+            resumed_lrs = [
+                base_lr * lr_lambda(step)
+                for base_lr, lr_lambda in zip(
+                    self.lr_scheduler.base_lrs,
+                    self.lr_scheduler.lr_lambdas,
+                )
+            ]
+            for param_group, lr in zip(self.optimizer.param_groups, resumed_lrs):
+                param_group["lr"] = lr
+            self.lr_scheduler._last_lr = resumed_lrs
+            logger.info(
+                "Reconstructed legacy LR scheduler at completed_steps=%s; lrs=%s.",
+                step,
+                resumed_lrs,
+            )
+        logger.info(
+            "Resumed full training state from `%s`; completed_steps=%s, vla_epoch=%s, batch_cursor=%s.",
+            resume_state_path,
+            self.completed_steps,
+            self.vla_epoch_count,
+            self.vla_batches_consumed_in_epoch,
+        )
+
     def _save_checkpoint(self):
         """save current training state"""
+        checkpoint_path = os.path.join(self.checkpoint_dir, f"steps_{self.completed_steps}")
 
         if self.accelerator.is_main_process:
 
-            checkpoint_path = os.path.join(self.checkpoint_dir, f"steps_{self.completed_steps}")
             # save model state
             state_dict = self.accelerator.get_state_dict(self.model)
             torch.save(state_dict, checkpoint_path + "_pytorch_model.pt")
@@ -353,6 +483,32 @@ class VLATrainer(TrainerUtils):
                 logger.info("✅ Configuration files saved")
 
         self.accelerator.wait_for_everyone()
+        save_training_state = _coerce_config_bool(
+            getattr(self.config.trainer, "save_training_state", False),
+            default=False,
+            field_name="trainer.save_training_state",
+        )
+        if save_training_state:
+            state_dir = checkpoint_path + "_training_state"
+            self.accelerator.save_state(state_dir)
+            self.accelerator.wait_for_everyone()
+            if self.accelerator.is_main_process:
+                # Keep the raw scheduler outside Accelerate wrapping so one
+                # optimizer update always advances exactly one scheduler step.
+                torch.save(self.lr_scheduler.state_dict(), os.path.join(state_dir, "scheduler.bin"))
+                trainer_state = {
+                    "completed_steps": self.completed_steps,
+                    "vla_epoch_count": self.vla_epoch_count,
+                    "vla_batches_consumed_in_epoch": self.vla_batches_consumed_in_epoch,
+                    "max_train_steps": int(self.config.trainer.max_train_steps),
+                    "save_interval": int(self.config.trainer.save_interval),
+                    "eval_interval": int(self.config.trainer.eval_interval),
+                    "output_dir": str(self.config.output_dir),
+                }
+                with open(os.path.join(state_dir, "trainer_state.json"), "w", encoding="utf-8") as f:
+                    json.dump(trainer_state, f, indent=2)
+                self.accelerator.print(f"✅ Training state saved at {state_dir}")
+            self.accelerator.wait_for_everyone()
 
     def _get_learning_rate_metrics(self):
         """Collect learning-rate metrics for all optimizer parameter groups."""
@@ -396,19 +552,43 @@ class VLATrainer(TrainerUtils):
 
     def _create_data_iterators(self):
         """create data iterators"""
-        self.vla_iter = iter(self.vla_train_dataloader)
+        if hasattr(self.vla_train_dataloader, "sampler") and callable(
+            getattr(self.vla_train_dataloader.sampler, "set_epoch", None)
+        ):
+            self.vla_train_dataloader.sampler.set_epoch(self.vla_epoch_count)
+        if hasattr(self.vla_train_dataloader, "dataset"):
+            TrainerUtils._set_epoch_on_dataset_tree(
+                self.vla_train_dataloader.dataset,
+                self.vla_epoch_count,
+            )
+
+        cursor = int(self.vla_batches_consumed_in_epoch)
+        if cursor > 0:
+            skipped_loader = self.accelerator.skip_first_batches(
+                self.vla_train_dataloader,
+                num_batches=cursor,
+            )
+            self.vla_iter = iter(skipped_loader)
+            logger.info(
+                "Restored training dataloader cursor at epoch=%s, consumed_batches=%s.",
+                self.vla_epoch_count,
+                cursor,
+            )
+        else:
+            self.vla_iter = iter(self.vla_train_dataloader)
 
     def _get_next_batch(self):
         """get next batch (automatically handle data loop)"""
         try:
             batch_vla = next(self.vla_iter)
         except StopIteration:
-            if not hasattr(self, "vla_epoch_count"):
-                self.vla_epoch_count = 0
             self.vla_iter, self.vla_epoch_count = TrainerUtils._reset_dataloader(
                 self.vla_train_dataloader, self.vla_epoch_count
             )
+            self.vla_batches_consumed_in_epoch = 0
             batch_vla = next(self.vla_iter)
+
+        self.vla_batches_consumed_in_epoch += 1
 
         return batch_vla
 
@@ -426,6 +606,8 @@ class VLATrainer(TrainerUtils):
             desc=str(getattr(self.config, "run_id", "train")),
             disable=not self.accelerator.is_local_main_process,
         )
+        if self.completed_steps > 0:
+            progress_bar.update(self.completed_steps)
 
         # main training loop
         while self.completed_steps < self.config.trainer.max_train_steps:

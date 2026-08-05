@@ -111,7 +111,15 @@ else
 fi
 
 # ---------------------- GPU discovery ------------------------------
-if command -v nvidia-smi >/dev/null 2>&1; then
+if [[ -n "${CUDA_VISIBLE_DEVICES:-}" ]]; then
+  IFS=',' read -r -a VISIBLE_GPU_IDS <<< "${CUDA_VISIBLE_DEVICES}"
+  NUM_GPUS=0
+  for GPU_ID in "${VISIBLE_GPU_IDS[@]}"; do
+    if [[ -n "${GPU_ID//[[:space:]]/}" ]]; then
+      NUM_GPUS="$(( NUM_GPUS + 1 ))"
+    fi
+  done
+elif command -v nvidia-smi >/dev/null 2>&1; then
   NUM_GPUS="$(nvidia-smi --list-gpus | wc -l)"
 else
   NUM_GPUS="$(python - <<'PY'

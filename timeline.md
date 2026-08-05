@@ -34,14 +34,26 @@
 - 单独评估 AR-A step 1000：同样为 clean `1/5`、randomized `0/5`、合计 `1/10`。
 - 诊断结论：退化已经发生在 Expert-only 的 AR-A，不是 LAP9–10 解冻造成；下一步应检验 AR 的自定义 action 加权与辅助 loss。
 
-## 2026-08-05：FlowOnly-1000（进行中）
+## 2026-08-05：FlowOnly-1000（T9）
 
 - 从 T7 恢复。
 - 全冻结 LAP 与 LaWM，只更新 Action Expert。
 - 不使用 VLM、teacher cache、token alignment、夹爪/时刻权重、reconstruction loss 或 delta loss。
 - 仅使用 actions_mask 下的官方标准 flow matching loss。
 - 单卡 FP32，1000 step，effective batch 16，保存 step 250/500/750/1000。
-- 当前日志：`logs/lap10v3_ar_flowonly_task14_1000step/train.log`。
+- 1000 step 正常结束，耗时约 12.8 分钟，无 NaN/OOM；最终 flow loss 约 `0.004960`，但移动平均未呈现明显持续下降。
+- RoboTwin 3 clean + 3 randomized：clean `0/3`，randomized `1/3`，合计 `1/6`。
+- 同一 3+3 seed 子集上，T7 为 `2/6`，AR-A step 1000 为 `1/6`。FlowOnly 没有超过 T7，但成功 seed 发生了变化。
+- 固定同一 flow noise 的 128 样本离线比较中，FlowOnly 的 action MSE 从 T7 的 `0.003820` 小幅降至 `0.003641`，但闭环成功率未提高。
+- 结论：当前主要矛盾是离线 action/flow 代理指标与闭环成功不一致，而不是训练未更新或 loss 未降低。
+
+## 2026-08-05：架构决策——解耦 LAP6 与 Expert 条件分支
+
+- 后续不再沿用 LAP7–10 作为 LAP6 的串联后端。
+- 保留已验证的 `LAP6 → 32-D latent action → LaWM` 路径。
+- 另建独立的 Expert 条件模块（暂称 `SEC284`）：284 个 learned query 直接 cross-attend 三视角的 768 个 DINO token，输出 `[B,284,768]`。
+- SEC284 可以接收 EEF 和 LAP6 latent 作为辅助条件，但不应只依赖 32-D latent，以免丢失场景位置、物体状态和操作阶段信息。
+- 训练计划：先使用离线缓存的 VLM 284-token 表示预训练 SEC284，再使用真实 action 监督小学习率联合调整 SEC284 与 Expert 后层。部署时不加载 VLM。
 
 ## 后续维护规则
 

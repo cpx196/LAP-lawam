@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import logging
 import math
+import os
+import time
 from typing import TYPE_CHECKING, Any, Dict, Sequence, Tuple
 
 import torch
@@ -16,6 +19,33 @@ from .output_mapper import map_policy_infer_output, map_policy_train_output
 if TYPE_CHECKING:
     from starVLA.model.framework.latent_world.batch_builder import LatentWorldPolicyInferBatchBuilder
     from starVLA.model.framework.vlas.lawam import LatentWorldPolicyBackend
+
+
+PROFILE_ENV_VAR = "LAWAM_PROFILE_INFERENCE"
+PROFILE_LOG_PREFIX = "[LAWAM_PROFILE]"
+
+
+def _profile_enabled() -> bool:
+    return str(os.getenv(PROFILE_ENV_VAR, "0")).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _cuda_sync_if_needed() -> None:
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+
+
+def _now_after_cuda_sync() -> float:
+    _cuda_sync_if_needed()
+    return time.perf_counter()
+
+
+def _log_profile(payload: Dict[str, Any]) -> None:
+    try:
+        import json
+
+        logging.info("%s %s", PROFILE_LOG_PREFIX, json.dumps(payload, sort_keys=True))
+    except Exception:
+        logging.info("%s %s", PROFILE_LOG_PREFIX, payload)
 
 
 class LatentWorldPolicyRunner:
@@ -41,9 +71,13 @@ class LatentWorldPolicyRunner:
         guidance_scale: float | None = None,
         num_inference_steps: int | None = None,
     ) -> Dict[str, Any]:
+        profile_enabled = _profile_enabled()
+        total_start = _now_after_cuda_sync() if profile_enabled else 0.0
         if len(examples) == 0:
             raise ValueError("`infer_step` requires at least one example.")
+        stage_start = _now_after_cuda_sync() if profile_enabled else 0.0
         batch = self.infer_batch_builder.build_infer_batch(examples)
+        batch_build_ms = (_now_after_cuda_sync() - stage_start) * 1000.0 if profile_enabled else None
         batch_size = int(batch["action_hz"].shape[0])
         if batch_size != len(examples):
             raise ValueError(
@@ -90,6 +124,15 @@ class LatentWorldPolicyRunner:
                 "Inference action length mismatch: "
                 f"actual_len={actual_len}, expected_len={expected_len}, "
                 f"horizon_sec={horizon_sec}, action_hz={hz_values}."
+            )
+        if profile_enabled:
+            _log_profile(
+                {
+                    "runner_batch_build_ms": batch_build_ms,
+                    "runner_total_e2e_ms": (_now_after_cuda_sync() - total_start) * 1000.0,
+                    "runner_batch_size": batch_size,
+                    "runner_expected_action_len": expected_len,
+                }
             )
         return map_policy_infer_output(actions, intermediates=intermediates)
 

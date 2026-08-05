@@ -230,6 +230,11 @@ class ModelClient:
         self.action_reorder = self._resolve_action_reorder(action_reorder, action_dim=self.action_dim)
         self.embodiment_id = int(self._DEFAULT_EMBODIMENT_ID)
         self.client = WebsocketClientPolicy(host, port)
+        self.server_metadata = self.client.get_server_metadata() or {}
+        # The official Robotwin policy does not use state in its flow head.
+        # A LAP/LaWM ablation server nevertheless needs the raw 16-D EEF state
+        # for LAP, so this capability is advertised explicitly by the server.
+        self.requires_raw_eef = bool(self.server_metadata.get("requires_raw_eef", False))
         self._validate_server_metadata()
         self._slot_states: dict[int, _SlotState] = {}
 
@@ -280,6 +285,18 @@ class ModelClient:
         if self.needs_query(slot_id=slot_id, task_description=task_description):
             raise RuntimeError(f"Slot {slot_id} does not have any cached actions available.")
         return self._pop_slot_action(slot_id)
+
+    def get_action_trace_snapshot(self, slot_id: int = 0) -> dict[str, Any]:
+        """Return a copy of the current chunk state for optional rollout diagnostics."""
+        slot_state = self._get_slot_state(int(slot_id))
+        raw_actions = None
+        if slot_state.raw_actions is not None:
+            raw_actions = np.asarray(slot_state.raw_actions, dtype=np.float32).copy()
+        return {
+            "raw_actions": raw_actions,
+            "action_cursor": int(slot_state.action_cursor),
+            "executed_steps": int(slot_state.executed_steps),
+        }
 
     def step(self, example: dict[str, Any], step: int = 0, slot_id: int = 0) -> np.ndarray:
         del step
@@ -410,13 +427,17 @@ class ModelClient:
         return infer_example
 
     def _prepare_state(self, state: Any) -> Optional[np.ndarray]:
-        if state is None or not self.use_state:
+        if state is None:
             return None
         state_array = np.asarray(state, dtype=np.float32)
         if state_array.ndim == 2 and state_array.shape[0] == 1:
             state_array = state_array[0]
         if state_array.ndim != 1:
             raise ValueError(f"`state` must have shape [D], got {state_array.shape}.")
+        if self.requires_raw_eef:
+            return state_array
+        if not self.use_state:
+            return None
         if self.state_norm_stats is None:
             return state_array
         return self.normalize_state(

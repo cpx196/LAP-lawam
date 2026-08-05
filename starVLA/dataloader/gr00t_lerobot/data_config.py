@@ -928,6 +928,141 @@ class SO101Config:
 
 ###########################################################################################
 
+class SOFollowerDataConfig:
+    """LeRobot SO follower joint-position data used by Three_Cubes_1."""
+
+    video_keys = [
+        "video.front",
+        "video.right",
+        "video.wrist",
+    ]
+
+    state_keys = [
+        "state.shoulder_pan_pos",
+        "state.shoulder_lift_pos",
+        "state.elbow_flex_pos",
+        "state.wrist_flex_pos",
+        "state.wrist_roll_pos",
+        "state.gripper_pos",
+    ]
+    action_keys = [
+        "action.shoulder_pan_pos",
+        "action.shoulder_lift_pos",
+        "action.elbow_flex_pos",
+        "action.wrist_flex_pos",
+        "action.wrist_roll_pos",
+        "action.gripper_pos",
+    ]
+    language_keys = ["annotation.human.action.task_description"]
+
+    observation_indices = [0]
+    action_indices = list(range(16))
+
+    def modality_config(self):
+        video_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.video_keys,
+        )
+        state_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.state_keys,
+        )
+        action_modality = ModalityConfig(
+            delta_indices=self.action_indices,
+            modality_keys=self.action_keys,
+        )
+        language_modality = ModalityConfig(
+            delta_indices=self.observation_indices,
+            modality_keys=self.language_keys,
+        )
+        return {
+            "video": video_modality,
+            "state": state_modality,
+            "action": action_modality,
+            "language": language_modality,
+        }
+
+    def transform(self, *, image_hw: tuple[int, int] | None = None):
+        transforms = [
+            *_latent_world_video_transforms(self.video_keys, image_hw),
+            StateActionToTensor(apply_to=self.state_keys),
+            StateActionTransform(
+                apply_to=self.state_keys,
+                normalization_modes={key: "min_max" for key in self.state_keys},
+            ),
+            StateActionToTensor(apply_to=self.action_keys),
+            StateActionTransform(
+                apply_to=self.action_keys,
+                normalization_modes={key: "min_max" for key in self.action_keys},
+            ),
+        ]
+        return _build_composed_transform(transforms, self.state_keys, self.action_keys)
+
+
+###########################################################################################
+
+
+class SO101EEFDeltaDataConfig:
+    """SO101 absolute EEF state with relative EEF action chunks."""
+
+    video_keys = [
+        "video.front",
+        "video.right",
+        "video.wrist",
+    ]
+    state_keys = [
+        "state.eef_position",
+        "state.eef_orientation_rotvec",
+        "state.gripper",
+    ]
+    action_keys = [
+        "action.eef_delta_position",
+        "action.eef_delta_orientation_rotvec",
+        "action.gripper",
+    ]
+    language_keys = ["annotation.human.action.task_description"]
+    observation_indices = [0]
+    action_indices = list(range(16))
+
+    def modality_config(self):
+        return {
+            "video": ModalityConfig(
+                delta_indices=self.observation_indices,
+                modality_keys=self.video_keys,
+            ),
+            "state": ModalityConfig(
+                delta_indices=self.observation_indices,
+                modality_keys=self.state_keys,
+            ),
+            "action": ModalityConfig(
+                delta_indices=self.action_indices,
+                modality_keys=self.action_keys,
+            ),
+            "language": ModalityConfig(
+                delta_indices=self.observation_indices,
+                modality_keys=self.language_keys,
+            ),
+        }
+
+    def transform(self, *, image_hw: tuple[int, int] | None = None):
+        transforms = [
+            *_latent_world_video_transforms(self.video_keys, image_hw),
+            StateActionToTensor(apply_to=self.state_keys),
+            StateActionTransform(
+                apply_to=self.state_keys,
+                normalization_modes={key: "min_max" for key in self.state_keys},
+            ),
+            StateActionToTensor(apply_to=self.action_keys),
+            StateActionTransform(
+                apply_to=self.action_keys,
+                normalization_modes={key: "min_max" for key in self.action_keys},
+            ),
+        ]
+        return _build_composed_transform(transforms, self.state_keys, self.action_keys)
+
+
+###########################################################################################
+
 
 class AgilexDataConfig:
     """Configuration for Agilex dual-arm robot with rich state/action information"""
@@ -1723,6 +1858,8 @@ ROBOT_TYPE_CONFIG_MAP = {
     "bridge": BridgeDataConfig(),
     "oxe_rt1": OxeRT1DataConfig(),
     "SO101": SO101Config(),
+    "so_follower": SOFollowerDataConfig(),
+    "so101_eef_delta": SO101EEFDeltaDataConfig(),
     "agilex": AgilexDataConfig(),
     "robotwin_joint": AgilexDataConfig(),
     "robotwin_eef": RobotwinEEFDataConfig(),

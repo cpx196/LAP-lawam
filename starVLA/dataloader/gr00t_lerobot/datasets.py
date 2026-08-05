@@ -388,6 +388,15 @@ class LeRobotSingleDataset(Dataset):
         """
         # first check if the path directory exists
         self.data_cfg = data_cfg
+        raw_first_key_map = (
+            self.data_cfg.get("action_chunk_first_key_map", {})
+            if hasattr(self.data_cfg, "get")
+            else {}
+        )
+        self._action_chunk_first_key_map = {
+            str(sequence_key): str(first_key)
+            for sequence_key, first_key in dict(raw_first_key_map or {}).items()
+        }
         if not Path(dataset_path).exists():
             raise FileNotFoundError(f"Dataset path {dataset_path} does not exist")
         # Internal switch: recompute stats at runtime and overwrite cached file.
@@ -461,6 +470,8 @@ class LeRobotSingleDataset(Dataset):
         self._build_active_step_indexing()
         self._modality_keys = self._get_modality_keys()
         self._delta_indices = self._get_delta_indices()
+        for first_key in self._action_chunk_first_key_map.values():
+            self._delta_indices.setdefault(first_key, np.array([0], dtype=np.int64))
         self._action_hz = self._resolve_action_hz()
         self.set_transforms_metadata(self.metadata)
         self.set_epoch(0)
@@ -1142,7 +1153,19 @@ class LeRobotSingleDataset(Dataset):
         # Sort paths by (chunk_index, file_index) numerically
         paths = sorted(paths, key=_parse_path_indices)
         
-        self.hf_dataset = HFDataset.from_parquet([str(p) for p in paths])
+        try:
+            self.hf_dataset = HFDataset.from_parquet([str(p) for p in paths])
+        except ValueError as exc:
+            if "Feature type 'List' not found" not in str(exc):
+                raise
+            print(
+                f"[INFO] Falling back to pandas parquet loading for {self.dataset_name}: {exc}"
+            )
+            frames = [pd.read_parquet(p) for p in paths]
+            self.hf_dataset = HFDataset.from_pandas(
+                pd.concat(frames, ignore_index=True),
+                preserve_index=False,
+            )
         print(f"[INFO] Loaded HF dataset with {len(self.hf_dataset)} frames")
 
     def _get_tasks(self) -> pd.DataFrame:
@@ -1314,7 +1337,59 @@ class LeRobotSingleDataset(Dataset):
         for modality, keys in modality_keys.items():
             for key in keys:
                 data[key] = get_data(trajectory_id, modality, key, base_index)
+
+        for sequence_key, first_key in self._action_chunk_first_key_map.items():
+            if sequence_key not in data:
+                raise KeyError(
+                    f"Configured action sequence key `{sequence_key}` is not loaded. "
+                    f"Available keys: {sorted(data)}"
+                )
+            sequence = np.asarray(data[sequence_key]).copy()
+            first_value = np.asarray(
+                self._get_current_state_or_action_value(
+                    trajectory_id=trajectory_id,
+                    modality="action",
+                    key=first_key,
+                    base_index=base_index,
+                )
+            )
+            if sequence.ndim != 2 or first_value.shape != (1, sequence.shape[1]):
+                raise ValueError(
+                    f"Cannot replace first action for `{sequence_key}`: "
+                    f"sequence_shape={sequence.shape}, first_shape={first_value.shape}."
+                )
+            sequence[0] = first_value[0]
+            data[sequence_key] = sequence
         return data
+
+    def _get_current_state_or_action_value(
+        self,
+        *,
+        trajectory_id: int,
+        modality: str,
+        key: str,
+        base_index: int,
+    ) -> np.ndarray:
+        """Read one auxiliary state/action field without exposing it as a model modality."""
+        self._set_curr_episode(trajectory_id)
+        subkey = key.replace(f"{modality}.", "", 1)
+        modality_meta = getattr(self.lerobot_modality_meta, modality)
+        if subkey not in modality_meta:
+            raise KeyError(
+                f"Auxiliary key `{key}` is absent from {modality} metadata; "
+                f"available={sorted(modality_meta)}."
+            )
+        key_meta = modality_meta[subkey]
+        original_key = key_meta.original_key or subkey
+        absolute_index = self._curr_from_index + int(base_index)
+        values = self._fetch_hf_column(original_key, [absolute_index])
+        feature_dim = int(key_meta.end - key_meta.start)
+        return self._slice_state_action_rows(
+            values,
+            int(key_meta.start),
+            int(key_meta.end),
+            feature_dim,
+        )
 
     
     def get_trajectory_data(self, trajectory_id: int) -> pd.DataFrame:
@@ -2557,8 +2632,59 @@ class LeRobotMixtureDataset(Dataset):
         Args:
             epoch (int): The epoch to set.
         """
-        self.epoch = epoch
-        # self.sampled_steps = self.sample_epoch()
+        self.epoch = int(epoch)
+        self._build_epoch_sample_plan()
+
+    def _build_epoch_sample_plan(self) -> None:
+        """Build a shuffled epoch plan without replacement where possible."""
+        epoch_size = len(self)
+        if epoch_size <= 0:
+            self._epoch_dataset_indices = np.array([], dtype=np.int64)
+            self._epoch_local_indices = np.array([], dtype=np.int64)
+            return
+
+        expected_counts = self.dataset_sampling_weights * epoch_size
+        sample_counts = np.floor(expected_counts).astype(np.int64)
+        remainder = int(epoch_size - sample_counts.sum())
+        if remainder > 0:
+            fractional = expected_counts - sample_counts
+            order = np.argsort(-fractional, kind="stable")
+            sample_counts[order[:remainder]] += 1
+
+        dataset_parts: list[np.ndarray] = []
+        local_parts: list[np.ndarray] = []
+        plan_epoch = self.epoch if self.mode in {"train", "all"} else 0
+        for dataset_index, (dataset, sample_count) in enumerate(zip(self.datasets, sample_counts)):
+            sample_count = int(sample_count)
+            dataset_length = int(len(dataset))
+            if sample_count <= 0:
+                continue
+            if dataset_length <= 0:
+                raise ValueError(f"Cannot sample from empty dataset at index {dataset_index}.")
+
+            rng = np.random.default_rng(
+                safe_hash((self.seed, plan_epoch, "epoch_local_indices", dataset_index))
+            )
+            local_cycles: list[np.ndarray] = []
+            remaining = sample_count
+            while remaining > 0:
+                permutation = rng.permutation(dataset_length).astype(np.int64, copy=False)
+                take = min(remaining, dataset_length)
+                local_cycles.append(permutation[:take])
+                remaining -= take
+
+            local_parts.append(np.concatenate(local_cycles))
+            dataset_parts.append(np.full(sample_count, dataset_index, dtype=np.int64))
+
+        if not local_parts:
+            raise RuntimeError("Epoch sample plan is empty despite a positive dataset length.")
+
+        local_indices = np.concatenate(local_parts)
+        dataset_indices = np.concatenate(dataset_parts)
+        plan_rng = np.random.default_rng(safe_hash((self.seed, plan_epoch, "epoch_sample_plan")))
+        shuffle_order = plan_rng.permutation(len(local_indices))
+        self._epoch_local_indices = local_indices[shuffle_order]
+        self._epoch_dataset_indices = dataset_indices[shuffle_order]
 
     def sample_step(self, index: int) -> tuple[LeRobotSingleDataset, int, int]:
         """Sample a single step from the dataset.
@@ -2566,14 +2692,15 @@ class LeRobotMixtureDataset(Dataset):
         Uses uniform sampling across all steps via hf_dataset absolute index,
         following the official LeRobot v3 approach.
         """
-        rng = self._create_rng(index)
+        plan_index = int(index)
+        if plan_index < 0:
+            plan_index += len(self)
+        if plan_index < 0 or plan_index >= len(self):
+            raise IndexError(f"Sample index {index} is outside epoch length {len(self)}.")
 
-        # Sample dataset based on dataset_sampling_weights
-        dataset_index = rng.choice(len(self.datasets), p=self.dataset_sampling_weights)
+        dataset_index = int(self._epoch_dataset_indices[plan_index])
+        local_idx = int(self._epoch_local_indices[plan_index])
         dataset = self.datasets[dataset_index]
-
-        # Sample local index uniformly from active split, then map to (trajectory_id, base_index)
-        local_idx = rng.integers(0, len(dataset))
         trajectory_id, base_index = dataset.abs_index_to_episode_step(local_idx)
         return dataset, trajectory_id, base_index
 

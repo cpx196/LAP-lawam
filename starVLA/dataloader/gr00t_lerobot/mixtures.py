@@ -84,6 +84,12 @@ DATASET_NAMED_MIXTURES = {
     "SO101_pick": [
         ("pick_dataset_name", 1.0, "SO101"),
     ],
+    "three_cubes_1": [
+        ("Three_Cubes_1", 1.0, "so_follower"),
+    ],
+    "three_cubes_1_eef_delta": [
+        ("Three_Cubes_1_EEF", 1.0, "so101_eef_delta"),
+    ],
 
     "arx_x5": [
         ("arx_x5", 1.0, "arx_x5"),

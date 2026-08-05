@@ -1,6 +1,9 @@
 from contextlib import nullcontext
 from dataclasses import dataclass, field
+import logging
+import os
 from pathlib import Path
+import time
 from typing import Any, Dict, Optional, Tuple, Union, cast
 
 import torch
@@ -27,6 +30,31 @@ from .flowmatching_expert import ConditionalFlowMatchingConfig, ConditionalFlowM
 # ============================================================================
 
 DEFAULT_LAM_ROOT = Path("latent_action_model")
+PROFILE_ENV_VAR = "LAWAM_PROFILE_INFERENCE"
+PROFILE_LOG_PREFIX = "[LAWAM_PROFILE]"
+
+
+def _profile_enabled() -> bool:
+    return str(os.getenv(PROFILE_ENV_VAR, "0")).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _cuda_sync_if_needed() -> None:
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+
+
+def _now_after_cuda_sync() -> float:
+    _cuda_sync_if_needed()
+    return time.perf_counter()
+
+
+def _log_profile(payload: Dict[str, Any]) -> None:
+    try:
+        import json
+
+        logging.info("%s %s", PROFILE_LOG_PREFIX, json.dumps(payload, sort_keys=True))
+    except Exception:
+        logging.info("%s %s", PROFILE_LOG_PREFIX, payload)
 
 
 @dataclass
@@ -613,6 +641,7 @@ class LatentWorldPolicyBackend(nn.Module):
         primary_visual_input: torch.Tensor,
         source: str,
         lam_features_with_no_grad: bool,
+        profile: Optional[Dict[str, float]] = None,
     ) -> PolicyEncodingState:
         vlm_stage_dtype = self.model_cfg.vlm_dtype
         lam_stage_dtype = torch.bfloat16
@@ -620,6 +649,7 @@ class LatentWorldPolicyBackend(nn.Module):
         device = prepared_batch["input_ids"].device
         act_query, flow_query = self._prepare_queries(device=device, vlm_stage_dtype=vlm_stage_dtype)
 
+        stage_start = _now_after_cuda_sync() if profile is not None else 0.0
         with _cuda_autocast(vlm_stage_dtype):
             vlm_out_dict = self._run_vlm_stage(
                 input_ids=prepared_batch["input_ids"],
@@ -631,15 +661,20 @@ class LatentWorldPolicyBackend(nn.Module):
                 act_query=act_query,
                 flow_query=flow_query,
             )
+        if profile is not None:
+            profile["qwen_vlm_ms"] = (_now_after_cuda_sync() - stage_start) * 1000.0
         h_vlm = vlm_out_dict["h_vlm"]
         pred_action_emb = vlm_out_dict["pred_latent"]
 
         with _cuda_autocast(lam_stage_dtype):
+            stage_start = _now_after_cuda_sync() if profile is not None else 0.0
             if lam_features_with_no_grad:
                 with torch.no_grad():
                     features = self.lam.extract_vision_features(primary_visual_input)
             else:
                 features = self.lam.extract_vision_features(primary_visual_input)
+            if profile is not None:
+                profile["dino_lam_ms"] = (_now_after_cuda_sync() - stage_start) * 1000.0
 
             if features is None:
                 raise ValueError(f"[{source}] lam visual feature extraction returned None; check LAM config.")
@@ -647,6 +682,7 @@ class LatentWorldPolicyBackend(nn.Module):
             h_t = h_t_original
             h_t1_gt = features[:, -1, :, :]
 
+            stage_start = _now_after_cuda_sync() if profile is not None else 0.0
             if self.model_cfg.future_prediction:
                 h_t1_pred = self._decode_future_tokens_strict_single_query(
                     h_t=h_t,
@@ -655,6 +691,8 @@ class LatentWorldPolicyBackend(nn.Module):
                 )
             else:
                 h_t1_pred = h_t
+            if profile is not None:
+                profile["lam_decoder_ms"] = (_now_after_cuda_sync() - stage_start) * 1000.0
 
         return PolicyEncodingState(
             h_vlm=h_vlm,
@@ -685,12 +723,14 @@ class LatentWorldPolicyBackend(nn.Module):
         prepared_batch: LatentWorldPolicyInferBatch,
         source: str,
         lam_features_with_no_grad: bool,
+        profile: Optional[Dict[str, float]] = None,
     ) -> PolicyEncodingState:
         return self._run_shared_encoding_core(
             prepared_batch=prepared_batch,
             primary_visual_input=prepared_batch["primary_image"],
             source=source,
             lam_features_with_no_grad=lam_features_with_no_grad,
+            profile=profile,
         )
 
     def forward(
@@ -799,11 +839,16 @@ class LatentWorldPolicyBackend(nn.Module):
         return_intermediates: bool = False,
         return_padded: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
+        profile = {} if _profile_enabled() else None
+        total_start = _now_after_cuda_sync() if profile is not None else 0.0
         flow_stage_dtype = torch.float32
+        stage_start = _now_after_cuda_sync() if profile is not None else 0.0
         prepared_batch = cast(
             LatentWorldPolicyInferBatch,
             self._prepare_infer_batch(batch=batch),
         )
+        if profile is not None:
+            profile["prepare_infer_batch_ms"] = (_now_after_cuda_sync() - stage_start) * 1000.0
 
         if guidance_scale is None:
             guidance_scale = float(self.flow.config.cfg_guidance_scale)
@@ -814,9 +859,11 @@ class LatentWorldPolicyBackend(nn.Module):
             prepared_batch=prepared_batch,
             source="LatentWorldPolicyBackend.predict_action",
             lam_features_with_no_grad=False,
+            profile=profile,
         )
         attn_flow = prepared_batch["attention_mask"] == 1
 
+        stage_start = _now_after_cuda_sync() if profile is not None else 0.0
         with _cuda_autocast(flow_stage_dtype):
             actions = self.flow.sample_actions_cfg(
                 h_t=shared.h_t,
@@ -831,6 +878,18 @@ class LatentWorldPolicyBackend(nn.Module):
                 attention_mask=attn_flow,
                 return_padded=bool(return_padded),
             )
+        if profile is not None:
+            profile["action_expert_ms"] = (_now_after_cuda_sync() - stage_start) * 1000.0
+            profile["total_policy_ms"] = (_now_after_cuda_sync() - total_start) * 1000.0
+            profile.update(
+                {
+                    "batch_size": int(prepared_batch["action_hz"].shape[0]),
+                    "num_inference_steps": int(num_inference_steps),
+                    "guidance_scale": float(guidance_scale),
+                    "action_hz": [float(x) for x in prepared_batch["action_hz"].detach().cpu().tolist()],
+                }
+            )
+            _log_profile(profile)
 
         if not return_intermediates:
             return actions

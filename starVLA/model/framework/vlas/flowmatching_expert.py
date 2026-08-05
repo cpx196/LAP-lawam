@@ -285,6 +285,31 @@ class ConditionalFlowMatchingHead(nn.Module):
     def _cast_if_needed(x: torch.Tensor, target_dtype: torch.dtype) -> torch.Tensor:
         return x if x.dtype == target_dtype else x.to(dtype=target_dtype)
 
+    def _prepare_semantic_condition(
+        self,
+        *,
+        h_vlm: Optional[torch.Tensor],
+        h_lap: Optional[torch.Tensor],
+        model_dtype: torch.dtype,
+    ) -> torch.Tensor:
+        """Return 768-wide semantic tokens from exactly one condition source.
+
+        ``h_vlm`` keeps the released 2048-wide interface. ``h_lap`` is the
+        native VLM-free path and is already in the Expert's vision width.
+        """
+        if (h_vlm is None) == (h_lap is None):
+            raise ValueError("Provide exactly one of `h_vlm` or `h_lap`.")
+        if h_lap is not None:
+            if h_lap.ndim != 3 or h_lap.shape[-1] != self.config.vision_dim:
+                raise ValueError(
+                    f"`h_lap` must be [B,L,{self.config.vision_dim}], "
+                    f"got {tuple(h_lap.shape)}."
+                )
+            return self._cast_if_needed(h_lap, model_dtype)
+        assert h_vlm is not None
+        h_vlm = self._cast_if_needed(h_vlm, model_dtype)
+        return self.enc_vlm(h_vlm)
+
     def _build_hidden_positional_embeddings(
         self,
         *,
@@ -372,7 +397,7 @@ class ConditionalFlowMatchingHead(nn.Module):
         self,
         h_t: torch.Tensor,
         h_t1_star: torch.Tensor,
-        h_vlm: torch.Tensor,
+        h_vlm: Optional[torch.Tensor],
         state: torch.Tensor, # [B, D]
         actions: torch.Tensor, # [B, T, K]
         action_hz: torch.Tensor,  # [B]
@@ -380,11 +405,13 @@ class ConditionalFlowMatchingHead(nn.Module):
         state_mask: torch.Tensor,  # [B, D]
         actions_mask: torch.Tensor,  # [B, T, K]
         attention_mask: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
+        h_lap: Optional[torch.Tensor] = None,
+        return_training_details: bool = False,
+        element_weights: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor | dict[str, torch.Tensor]:
         model_dtype = self._compute_dtype()
         h_t = self._cast_if_needed(h_t, model_dtype)
         h_t1_star = self._cast_if_needed(h_t1_star, model_dtype)
-        h_vlm = self._cast_if_needed(h_vlm, model_dtype)
         actions = self._cast_if_needed(actions, model_dtype)
         device = actions.device
         batch_size = h_t.shape[0]
@@ -451,7 +478,9 @@ class ConditionalFlowMatchingHead(nn.Module):
             embodiment_id=embodiment_id,
             model_dtype=model_dtype,
         )
-        cond_vlm = self.enc_vlm(h_vlm)  # [B, seq_len, vision_dim]
+        cond_vlm = self._prepare_semantic_condition(
+            h_vlm=h_vlm, h_lap=h_lap, model_dtype=model_dtype
+        )
 
         bsz = h_t.shape[0]
         cfg_future = self.cfg_embeddings.expand(bsz, -1, -1)
@@ -560,10 +589,28 @@ class ConditionalFlowMatchingHead(nn.Module):
         pred_velocity = pred_velocity_all[:, -actions.shape[1] :, :]
         loss_elem = F.mse_loss(pred_velocity, velocity_target, reduction="none")
         valid = actions_mask_f
+        if element_weights is not None:
+            if tuple(element_weights.shape) != tuple(actions.shape):
+                raise ValueError(
+                    "`element_weights` must match actions shape, "
+                    f"got {tuple(element_weights.shape)} vs {tuple(actions.shape)}."
+                )
+            valid = valid * element_weights.to(device=device, dtype=model_dtype)
         robot_valid = (embodiment_id.to(device=device, dtype=torch.long) != 0).to(dtype=model_dtype)
         valid = valid * robot_valid.view(-1, 1, 1)
         denom = valid.sum().clamp_min(1.0)
         losses = (loss_elem * valid).sum() / denom
+        if return_training_details:
+            action_pred = x_t + (1.0 - time) * pred_velocity
+            return {
+                "loss": losses,
+                "pred_velocity": pred_velocity,
+                "velocity_target": velocity_target,
+                "x_t": x_t,
+                "time": time,
+                "action_pred": action_pred,
+                "valid_weights": valid,
+            }
         return losses
 
     @torch.inference_mode()
@@ -571,7 +618,7 @@ class ConditionalFlowMatchingHead(nn.Module):
         self,
         h_t: torch.Tensor,
         h_t1_star: torch.Tensor,
-        h_vlm: torch.Tensor,
+        h_vlm: Optional[torch.Tensor],
         state: torch.Tensor,
         state_mask: torch.Tensor,
         action_hz: torch.Tensor,  # [B]
@@ -580,12 +627,12 @@ class ConditionalFlowMatchingHead(nn.Module):
         num_inference_steps: Optional[int] = None,
         attention_mask: Optional[torch.Tensor] = None,
         return_padded: bool = False,
+        h_lap: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         device = h_t.device
         model_dtype = self._compute_dtype()
         h_t = self._cast_if_needed(h_t, model_dtype)
         h_t1_star = self._cast_if_needed(h_t1_star, model_dtype)
-        h_vlm = self._cast_if_needed(h_vlm, model_dtype)
         batch_size = h_t.shape[0]
         action_hz_f = action_hz.to(device=device, dtype=torch.float32)
         if action_hz_f.ndim != 1 or action_hz_f.shape[0] != batch_size:
@@ -629,7 +676,9 @@ class ConditionalFlowMatchingHead(nn.Module):
 
         dt = 1.0 / float(num_inference_steps)
 
-        cond_vlm = self.enc_vlm(h_vlm)  # [B, seq_len, vision_dim]
+        cond_vlm = self._prepare_semantic_condition(
+            h_vlm=h_vlm, h_lap=h_lap, model_dtype=model_dtype
+        )
         cond_state = self._prepare_state_condition(
             state=state,
             state_mask=state_mask,

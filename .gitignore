@@ -249,3 +249,15 @@ tmp/
 *.log
 qwen3_weights
 .codex_*
+
+# Local model artifacts and export bundles. Keep source/configuration in Git;
+# distribute trained parameters separately (for example with Releases or HF).
+weights/
+transfer_packages/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.tar
+*.tar.gz
