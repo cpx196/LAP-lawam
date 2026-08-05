@@ -28,6 +28,7 @@ LaWAM policy training with latent visual subgoals.
 ## Index
 
 - [Paper Overview](#paper-overview)
+- [Local RoboTwin Research Notes](#local-robotwin-research-notes)
 - [File Structure](#file-structure)
 - [Environment Setup](#environment-setup)
 - [Model Preparation](#model-preparation)
@@ -53,6 +54,19 @@ requirements.txt         LaWAM-side Python dependencies
 train_lawam.sh
 train_lawam_distributed.sh
 ```
+
+## Local RoboTwin Research Notes
+
+This workspace also contains a single-task RoboTwin research track that
+explores replacing online VLM conditioning with LAP-based conditions. The
+project-level status, chronology, and experiment evidence are maintained in:
+
+- [Project overview (Chinese)](docs/PROJECT_OVERVIEW_ZH.md)
+- [Experiment timeline](timeline.md)
+
+These notes distinguish training/representation metrics from closed-loop
+RoboTwin success rates and record the exact evaluation protocol used for local
+experiments.
 
 ## Environment Setup
 
