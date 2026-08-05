@@ -1,81 +1,85 @@
-# LaWAM: Latent World Action Models for Efficient Dynamics-Aware Robot Policies
+# LAP-LaWAM: RoboTwin 无 VLM 轻量机器人策略研究
 
-<p>
-  <a href="https://arxiv.org/abs/2606.15768"><img alt="arXiv" height="24" src="https://img.shields.io/badge/arXiv-2606.15768-b31b1b.svg"></a>
-  <a href="https://rlinf.github.io/LaWAM/"><img alt="Project Page" height="24" src="https://img.shields.io/badge/Project_Page-LaWAM-2ea44f.svg"></a>
-  <a href="https://nemo-1024.github.io/blogs/lawam/"><img alt="Blog" height="24" src="https://img.shields.io/badge/Blog-LaWAM-0a66c2.svg"></a>
-  <br>
-  <a href="https://huggingface.co/collections/jialei02/lawam-checkpoints"><img alt="Hugging Face Model Collection" src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model%20Collection-f7c843"></a>
-  <a href="https://huggingface.co/datasets/jialei02/libero_merged_no_noops_20hz"><img alt="Hugging Face Dataset - LIBERO" src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset%20LIBERO-f7c843"></a>
-  <a href="https://huggingface.co/datasets/jialei02/robotwin_merged"><img alt="Hugging Face Dataset - RoboTwin" src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset%20RoboTwin-f7c843"></a>
-</p>
+[![Repository](https://img.shields.io/badge/GitHub-cpx196%2FLAP--lawam-181717?logo=github)](https://github.com/cpx196/LAP-lawam)
+[![Task](https://img.shields.io/badge/RoboTwin-move__pillbottle__pad-2563eb)](docs/PROJECT_OVERVIEW_ZH.md)
+[![Status](https://img.shields.io/badge/status-research-orange)](timeline.md)
+[![Upstream](https://img.shields.io/badge/upstream-RLinf%2FLaWAM-6b7280)](https://github.com/RLinf/LaWAM)
 
-This repository contains the training and evaluation code for **LaWAM**,
-a **La**tent **W**orld **A**ction **M**odel for robot policies. LaWAM predicts
-future observation features in a frozen visual feature space and injects them as
-latent visual subgoals for action generation.
+这是 **cpx196** 基于 [RLinf/LaWAM](https://github.com/RLinf/LaWAM) 开发的个人研究仓库，而不是 LaWAM 官方发布仓库。项目聚焦于 RoboTwin 单任务环境，用轻量 LAP 和专用场景条件模块替代 Qwen3-VL-2B 的在线推理，同时保留 LaWM 的视觉子目标能力。
 
-## Paper Overview
+## 研究目标
 
-LaWAM introduces a latent world-model interface for VLA policies. The overview
-figure below summarizes the two-stage pipeline: latent world model learning and
-LaWAM policy training with latent visual subgoals.
+当前固定任务为 `move_pillbottle_pad`：Aloha-AgileX 双臂机器人将药瓶抓取并放到蓝色垫上。输入包含主视角、左腕视角、右侧视角以及当前 16-D 双臂 EEF state。
 
-<p align="center">
-  <img src="./assets/lawam_overview.png" alt="LaWAM method overview" width="95%">
-</p>
-
-## Index
-
-- [Paper Overview](#paper-overview)
-- [Local RoboTwin Research Notes](#local-robotwin-research-notes)
-- [File Structure](#file-structure)
-- [Environment Setup](#environment-setup)
-- [Model Preparation](#model-preparation)
-- [Inference](#inference)
-  - [LIBERO](#libero-inference)
-  - [RoboTwin](#robotwin-inference)
-- [SFT Training](#sft-training)
-  - [LIBERO](#libero-sft)
-  - [RoboTwin](#robotwin-sft)
-- [Checkpoint Notes](#checkpoint-notes)
-- [Citation](#citation)
-- [Acknowledgements](#acknowledgements)
-
-## File Structure
+目标架构：
 
 ```text
-starVLA/                 Core LaWAM model, dataloaders, training loop, configs
-latent_action_model/     LaWM / latent-action model code and utilities
-deployment/              Policy server implementations for evaluation
-examples/LIBERO/         LIBERO evaluation scripts
-examples/Robotwin/       RoboTwin evaluation scripts and native policy adapter
-requirements.txt         LaWAM-side Python dependencies
-train_lawam.sh
-train_lawam_distributed.sh
+三视角 RGB + 当前 EEF
+        ↓
+      DINO tokens
+        ├── LAP6 → 32-D latent action → LaWM → visual subgoal
+        └── SEC284 → 284×768 scene condition → Action Expert
 ```
 
-## Local RoboTwin Research Notes
+- `LAP6 → LaWM` 保留已验证的 latent-action 分支。
+- `SEC284` 是计划中与 LAP6 并行的独立模块，将直接 cross-attend 三视角 DINO token。
+- 部署阶段不加载 Qwen VLM；VLM 只可在离线预训练中作为 teacher。
 
-This workspace also contains a single-task RoboTwin research track that
-explores replacing online VLM conditioning with LAP-based conditions. The
-project-level status, chronology, and experiment evidence are maintained in:
+## 当前进展
 
-- [Project overview (Chinese)](docs/PROJECT_OVERVIEW_ZH.md)
-- [Experiment timeline](timeline.md)
-- [LAP10V3 experiment ledger (Chinese)](docs/LAP10V3_EXPERIMENT_LEDGER_ZH.md)
+| 实验 | 关键变化 | RoboTwin 闭环结果 | 结论 |
+|---|---|---:|---|
+| Stage-1 三观测 LAP | DINO + EEF 预测 latent action | 离线表征测试 | LAP6/LaWM 链路有效 |
+| LAP8 no-VLM | 8 token 直接替代 VLM | `0/10` | 条件容量/接口不足 |
+| T7 LAP10V3 + Expert | 284 token + Expert 联合训练 | `4/10` | 当前最佳无 VLM baseline |
+| T8 AR-2000 | 真实 action 监督 | `1/10` | 离线 loss 改善未转化为闭环改善 |
+| T9 FlowOnly-1000 | 只训练 Expert，仅官方 flow loss | `1/6` | 未超过 T7 同 seed 的 `2/6` |
 
-These notes distinguish training/representation metrics from closed-loop
-RoboTwin success rates and record the exact evaluation protocol used for local
-experiments.
+训练 loss、token MSE 和 action MAE 只作为离线诊断；最终指标是固定 seed 和 policy flow noise 的 RoboTwin 闭环成功率。
 
-## Environment Setup
+## 项目文档
 
-Clone the repository into a directory named `LaWAM`, then create the
-policy/training environment from that repository root:
+- [项目总览](docs/PROJECT_OVERVIEW_ZH.md)
+- [实验时间线](timeline.md)
+- [LAP10V3 实验总账本](docs/LAP10V3_EXPERIMENT_LEDGER_ZH.md)
+- [Stage-1 60M 训练方案](docs/LAP_STAGE1_60M_TRAINING_PLAN_ZH.md)
+- [LAP10V3 AR-2000 会话与实验记录](docs/LAP10V3_AR_2000STEP_SESSION_RECORD_ZH.md)
+
+## 仓库结构
+
+```text
+starVLA/model/lap_stage1.py       LAP6 / Stage-1 模型
+starVLA/model/lap_stage2.py       LAP8、LAP10 和 LAP10V3 实验模型
+tools/                            数据缓存、训练、离线分析与评估脚本
+deployment/model_server/          无 VLM 和 A/B/C 消融政策服务
+examples/Robotwin/                RoboTwin bridge 与闭环评估接口
+docs/                             训练方案、交付文档和实验账本
+```
+
+Checkpoint、数据集、DINO/Qwen 权重、feature cache、日志和 RoboTwin 视频不存储在 Git 仓库中。
+
+## 原始 LaWAM
+
+本项目的基础模型与工程来自：
+
+- 原始仓库：[RLinf/LaWAM](https://github.com/RLinf/LaWAM)
+- 论文：[LaWAM: Latent World Action Models for Efficient Dynamics-Aware Robot Policies](https://arxiv.org/abs/2606.15768)
+- 原始项目页：[rlinf.github.io/LaWAM](https://rlinf.github.io/LaWAM/)
+- 官方权重：[Hugging Face collection](https://huggingface.co/collections/jialei02/lawam-checkpoints)
+- RoboTwin 数据：[robotwin_merged](https://huggingface.co/datasets/jialei02/robotwin_merged)
+
+原始 LaWAM 使用 VLM 条件和 LaWM 视觉子目标生成 action chunk。原始方法架构如下：
+
+<p align="center">
+  <img src="./assets/lawam_overview.png" alt="Original LaWAM method overview" width="95%">
+</p>
+
+## 环境安装
+
+克隆本个人研究仓库，然后创建 LaWAM 训练环境：
 
 ```bash
-git clone https://github.com/RLinf/LaWAM.git LaWAM
+git clone git@github.com:cpx196/LAP-lawam.git LaWAM
 cd LaWAM
 
 conda create -n lawam python=3.10 -y
@@ -87,9 +91,14 @@ pip install flash-attn==2.8.3 --no-build-isolation
 pip install -e .
 ```
 
-If the local CUDA/PyTorch build is incompatible with `flash-attn==2.8.3`,
-install a matching `flash-attn` wheel manually and then re-run
-`pip install -e .`.
+如需同步官方 LaWAM 的新变更，可以将其添加为只读 `upstream`：
+
+```bash
+git remote add upstream https://github.com/RLinf/LaWAM.git
+git fetch upstream
+```
+
+如果本地 CUDA/PyTorch 与 `flash-attn==2.8.3` 不兼容，请安装匹配的 `flash-attn` wheel，然后重新运行 `pip install -e .`。
 
 Quick import check:
 
@@ -104,11 +113,8 @@ PY
 
 ## Model Preparation
 
-This step is required before both training and inference.
 All commands in this section and the training sections assume the current
-directory is the `LaWAM` repository root.
-
-LaWAM always needs:
+directory is the `LaWAM` repository root. The original LaWAM baseline needs:
 
 - Base VLM:
   [Qwen/Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct)
@@ -116,6 +122,11 @@ LaWAM always needs:
   [facebook/dinov3-vitb16-pretrain-lvd1689m](https://huggingface.co/facebook/dinov3-vitb16-pretrain-lvd1689m)
 - LaWM/LAM checkpoint and config:
   [lawam_lam](https://huggingface.co/jialei02/lawam_lam)
+
+For the LAP no-VLM route, Qwen is only required when generating offline teacher
+targets or running the official baseline. No-VLM deployment loads DINO, LAP6,
+LaWM, the Expert-condition module and Action Expert checkpoints without loading
+Qwen online.
 
 Downloadable resources used by the released configs:
 
@@ -480,8 +491,8 @@ are valid in the new environment.
 - LIBERO checkpoints should use `datasets.vla_data.data_mix: libero`.
 - RoboTwin EEF checkpoints should use `datasets.vla_data.data_mix:
   robotwin_merged` or another supported RoboTwin EEF mixture.
-- `framework.qwenvl.base_vlm` must point to Qwen3-VL-2B-Instruct or a local
-  copy of that model.
+- Official VLM baseline runs require `framework.qwenvl.base_vlm` to point to
+  Qwen3-VL-2B-Instruct or a local copy; LAP no-VLM policy servers do not load it.
 - `framework.action_model.lam_ckpt_path` and
   `framework.action_model.lam_yaml_path` must point to a matching LAM checkpoint
   and YAML config.
@@ -501,6 +512,7 @@ are valid in the new environment.
 
 ## Acknowledgements
 
-This codebase is based on StarVLA and retains its MIT license. It also builds on
-open-source robotics and VLM components including LeRobot, Qwen-VL, DINO,
-LIBERO, and RoboTwin.
+LAP-LaWAM is maintained by `cpx196` as a research derivative of
+[RLinf/LaWAM](https://github.com/RLinf/LaWAM). The upstream code retains its
+original authorship and MIT license. This project also builds on StarVLA,
+LeRobot, Qwen-VL, DINO, LIBERO and RoboTwin.
