@@ -613,8 +613,7 @@ class ConditionalFlowMatchingHead(nn.Module):
             }
         return losses
 
-    @torch.inference_mode()
-    def sample_actions_cfg(
+    def _sample_actions_cfg_impl(
         self,
         h_t: torch.Tensor,
         h_t1_star: torch.Tensor,
@@ -628,7 +627,13 @@ class ConditionalFlowMatchingHead(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         return_padded: bool = False,
         h_lap: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
+        return_trace: bool = False,
+        forced_x_inputs: Optional[torch.Tensor] = None,
+        detach_trace: bool = True,
+        gradient_trace_step: Optional[int] = None,
+        flow_total_steps: Optional[int] = None,
+        flow_step_offset: int = 0,
+    ) -> torch.Tensor | tuple[torch.Tensor, dict[str, torch.Tensor]]:
         device = h_t.device
         model_dtype = self._compute_dtype()
         h_t = self._cast_if_needed(h_t, model_dtype)
@@ -665,6 +670,15 @@ class ConditionalFlowMatchingHead(nn.Module):
         )
         if num_inference_steps is None:
             num_inference_steps = int(getattr(self.config, "num_inference_steps", self.config.num_steps))
+        if flow_total_steps is None:
+            flow_total_steps = int(num_inference_steps)
+        if flow_total_steps < int(num_inference_steps):
+            raise ValueError("flow_total_steps must be >= num_inference_steps")
+        if flow_step_offset < 0 or flow_step_offset + int(num_inference_steps) > flow_total_steps:
+            raise ValueError(
+                f"invalid flow step window: offset={flow_step_offset}, "
+                f"steps={num_inference_steps}, total={flow_total_steps}"
+            )
         if cfg_scale is None:
             cfg_scale = float(self.config.cfg_guidance_scale)
         x_t = self.sample_noise(
@@ -673,6 +687,21 @@ class ConditionalFlowMatchingHead(nn.Module):
             dtype=model_dtype,
         )
         x_t = x_t * time_valid.unsqueeze(-1).to(dtype=x_t.dtype)
+
+        if forced_x_inputs is not None:
+            expected = (int(num_inference_steps or 0), batch_size, action_horizon, self.config.action_dim)
+            if tuple(forced_x_inputs.shape) != expected:
+                raise ValueError(
+                    f"`forced_x_inputs` must have shape {expected}, got {tuple(forced_x_inputs.shape)}."
+                )
+            forced_x_inputs = forced_x_inputs.to(device=device, dtype=model_dtype)
+        trace_x_inputs: list[torch.Tensor] = []
+        trace_velocities: list[torch.Tensor] = []
+        if gradient_trace_step is not None and not 0 <= gradient_trace_step < int(num_inference_steps):
+            raise ValueError(
+                f"gradient_trace_step must be in [0,{int(num_inference_steps)}), "
+                f"got {gradient_trace_step}"
+            )
 
         dt = 1.0 / float(num_inference_steps)
 
@@ -725,7 +754,11 @@ class ConditionalFlowMatchingHead(nn.Module):
             ], dim=1)
 
         for step in range(num_inference_steps):
-            t_cont = step / float(num_inference_steps)
+            if forced_x_inputs is not None:
+                x_t = forced_x_inputs[step]
+            if return_trace:
+                trace_x_inputs.append(x_t.detach().clone() if detach_trace else x_t.clone())
+            t_cont = (flow_step_offset + step) / float(flow_total_steps)
             t_discretized = int(t_cont * self.config.num_timestep_buckets)
             t_discretized = min(self.config.num_timestep_buckets - 1, max(0, t_discretized))
 
@@ -830,7 +863,34 @@ class ConditionalFlowMatchingHead(nn.Module):
                     pred_velocity = pred_velocity_cond
 
             pred_velocity = pred_velocity * time_valid.unsqueeze(-1).to(dtype=pred_velocity.dtype)
+            if return_trace:
+                detach_velocity = detach_trace or (
+                    gradient_trace_step is not None and step != gradient_trace_step
+                )
+                trace_velocities.append(
+                    pred_velocity.detach().clone() if detach_velocity else pred_velocity.clone()
+                )
             x_t = x_t + dt * pred_velocity
             x_t = x_t * time_valid.unsqueeze(-1).to(dtype=x_t.dtype)
 
-        return x_t[:, :output_horizon, :]
+        actions = x_t[:, :output_horizon, :]
+        if not return_trace:
+            return actions
+        return actions, {
+            "x_inputs": torch.stack(trace_x_inputs, dim=0),
+            "velocities": torch.stack(trace_velocities, dim=0),
+            "time_grid": torch.arange(
+                num_inference_steps, device=device, dtype=torch.float32
+            ).add_(flow_step_offset) / float(flow_total_steps),
+            "time_valid": time_valid.detach().clone(),
+        }
+
+    @torch.inference_mode()
+    def sample_actions_cfg(self, *args, **kwargs):
+        """Inference sampler; preserves the historical no-gradient API."""
+        return self._sample_actions_cfg_impl(*args, **kwargs)
+
+    def sample_actions_cfg_train(self, *args, **kwargs):
+        """Differentiable sampler for teacher-grid behavior distillation."""
+        kwargs["detach_trace"] = False
+        return self._sample_actions_cfg_impl(*args, **kwargs)

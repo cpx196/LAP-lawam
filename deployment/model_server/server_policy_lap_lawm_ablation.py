@@ -145,6 +145,9 @@ class LAPLaWMHybridPolicy:
                 profile["dino_lam_ms"] = (time.perf_counter() - stage_start) * 1000.0
             if tuple(features.shape[1:]) != (3, 256, 768):
                 raise ValueError(f"Expected 3-view DINO features [B,3,256,768], got {tuple(features.shape)}")
+            # Shadow-trace policies reuse the exact DINO tensor that drove
+            # LAP6, avoiding a second feature extraction or image mismatch.
+            self._last_lap_features = features.detach()
             h_t = features[:, 0]
             stage_start = time.perf_counter()
             z_lap = self.lap(features, lap_state.to(dtype=features.dtype))["z_lap"]

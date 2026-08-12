@@ -51,9 +51,35 @@
 
 - 后续不再沿用 LAP7–10 作为 LAP6 的串联后端。
 - 保留已验证的 `LAP6 → 32-D latent action → LaWM` 路径。
-- 另建独立的 Expert 条件模块（暂称 `SEC284`）：284 个 learned query 直接 cross-attend 三视角的 768 个 DINO token，输出 `[B,284,768]`。
-- SEC284 可以接收 EEF 和 LAP6 latent 作为辅助条件，但不应只依赖 32-D latent，以免丢失场景位置、物体状态和操作阶段信息。
-- 训练计划：先使用离线缓存的 VLM 284-token 表示预训练 SEC284，再使用真实 action 监督小学习率联合调整 SEC284 与 Expert 后层。部署时不加载 VLM。
+- 另建独立的 Expert 条件模块 `SEC284`：284 个 task-specific learned query 直接 cross-attend 三视角 DINO token，输出 `[B,284,768]`。
+- SEC284 不接收 EEF、`z_lap` 或 LAP6 scene token；EEF 由 Action Expert 的独立 proprioception 通道接收。
+- 当前阶段先独立蒸馏官方 VLM 在 Expert 输入边界处的 284-token condition，不引入 action、EEF、LAP6/LaWM 或 Expert loss。
+
+## 2026-08-11：SEC284 设计定稿
+
+- VLM 替代模块统一命名为 `SEC284`（Semantic Expert Conditioner, 284 tokens），不再使用其他模块名称。
+- 当前单任务输入合同固定为三视角 DINO latent；任务语义由 284 个 learned queries 固化，不增加运行时 language encoder；输出固定为 `[B,284,768]`，兼容官方 Action Expert。
+- 明确禁止 `teacher_position_mean + residual`、EEF shortcut 和 LAP6 latent shortcut。
+- 本轮固定使用 SEC284-L：8 层、hidden 768、12 heads、FFN 3072、约 76.6M 参数，不再并行训练 B/XL 规格。
+- 日志复核确认已有约 39M 的 LAP10/LAP10V3 条件头只达到约 `0.159` condition MSE；新训练先增加 64/256-sample 可记忆性测试，再使用完整 `24,140/1,749/1,749` train/val/test teacher cache。
+- 本阶段只以 held-out VLM condition 指标选择 checkpoint；达到表示验收门槛后再单独设计 Expert 接入和部署。
+- 完整方案见 [SEC284 设计文档](docs/VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md)。
+
+## 2026-08-11：SEC284 冻结 Expert 第一阶段
+
+- 纯表示蒸馏 3000 step 得到 raw MSE `0.060777`、cosine `0.955959`、dynamic R² `0.724421`、std ratio `0.8701`。
+- 固定 LAP6、LaWM、Action Expert，只更新 SEC284；action 仅作 flow/velocity 监督，不作为 SEC284 输入。
+- 使用相同 noise/time 的 teacher/student Expert velocity KD，加表示锚点、动态方差约束及 `0.25` 归一化 flow loss。
+- 训练配置为 2000 step、每 500 step 保存、local batch size 32；四卡 global batch 128，两卡回退 global batch 64。
+
+## 2026-08-12：SEC284 Expert inference-grid KD
+
+- 固定 SEC284、LAP6、LaWM 和 `enc_vlm`，只训练官方 Action Expert；使用 uniform inference-grid velocity KD，4 卡 `1,3,4,5`，local batch 8、global batch 32、学习率 `1e-7`。
+- 首轮 500 step 完成，保存 `outputs/sec284_expert_grid_kd_500step/step-000500.pt`；训练 `grid_kd` 从约 `0.00104` 的早期区间降到约 `0.00090`，但该指标不是闭环成功指标。
+- 从 500 step 续训到总计 2000 step；续训使用绝对 step offset，当前仍在运行。step-1000 checkpoint 已保存。
+- 固定 LAP6 + SEC284 no-VLM、clean、seed `100002` 的 1+1 闭环：500 step 和 1000 step 均为 `0/1`，但视频显示 500 step 已出现接触、夹持和短暂抬升/搬运尝试；1000 step 更早失稳并碰倒瓶子。
+- 当前经验上的 best checkpoint 是 500 step。结论再次确认：不要按总 train loss 单独选择 checkpoint；teacher-forcing velocity MSE 与真实闭环存在 objective mismatch。randomized 本轮暂不评估。
+- 详细状态、输出目录和后续建议见 [SEC284 grid-KD handoff](docs/HANDOFF_2026-08-12_01_SEC284_GRID_KD_ZH.md)。
 
 ## 后续维护规则
 

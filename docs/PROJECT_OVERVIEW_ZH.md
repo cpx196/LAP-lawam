@@ -1,13 +1,13 @@
 # LaWAM × RoboTwin 项目总览
 
-> 更新：2026-08-05（Asia/Hong_Kong）  
+> 更新：2026-08-12（Asia/Hong_Kong）
 > 工作目录：`/data/pxchen/LaWAM`  
 > 当前范围：RoboTwin 单任务 `move_pillbottle_pad`（任务 14）  
 > 时间线：仓库根目录 [timeline.md](../timeline.md)
 
 ## 1. 目标与当前结论
 
-本项目探索在 RoboTwin 中移除 Qwen3-VL-2B 的在线推理，以较小的视觉/状态条件模块替代其对 LaWM 和 Action Expert 的条件输入，同时保持单任务闭环能力。
+本项目探索在 RoboTwin 中移除 Qwen3-VL-2B 的在线推理，以 LAP6 保留 LaWM 的 latent-action 路径，并以单任务 SEC284 从三视角 DINO latent 生成 Action Expert 所需的 VLM-compatible hidden state。固定任务语义由 SEC284 的 learned queries 吸收，运行时不使用 language encoder。
 
 当前最可靠的结论如下：
 
@@ -16,7 +16,9 @@
 3. 当前最佳无 VLM 闭环基线是 T7：clean `1/5`、randomized `3/5`、总计 `4/10`。
 4. 直接真实动作 AR 微调（T8）得到 clean `1/5`、randomized `0/5`、总计 `1/10`。AR-A step 1000 与 AR-B step 2000 相同，问题已定位到 Expert-only AR 更新，而不是 LAP9–10 解冻。
 5. FlowOnly 实验从 T7 恢复、冻结 LAP/LaWM、只更新 Expert，最终离线 action MSE 小幅改善，但 RoboTwin 3+3 仅 `1/6`，未超过 T7 的同 seed `2/6`。
-6. 当前不再继续修补串联的 LAP7–10；保留 LAP6→LaWM，并计划单独训练一个 SEC284 模块替代 VLM 给 Action Expert 的 284-token 条件。
+6. 当前不再继续修补串联的 LAP7–10。下一版统一实现单任务 SEC284：以三视角 DINO latent 为动态输入，以 284 个 learned queries 固化任务先验，输出 `[B,284,768]` 并蒸馏固定指令下的官方 VLM condition；EEF、LAP6 输出和 teacher position mean 均不得进入 SEC284。完整设计见 [VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md](VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md)。
+
+7. SEC284 接入 Action Expert 后，500-step grid-KD checkpoint 的 clean 视频已经出现接触、夹持和短暂抬升/搬运尝试；1000-step 虽然继续训练，clean 视频反而更早失稳。当前应把 500 step 作为经验 best，不按总 `grid_kd` 单独选 checkpoint。
 
 ## 2. 任务、数据与评估口径
 
@@ -140,22 +142,21 @@ outputs/lap10v3_ar_flowonly_task14_1000step/
 
 T9 已正常完成，最终 flow loss 约 `0.004960`。RoboTwin 3+3 为 clean `0/3`、randomized `1/3`，合计 `1/6`；T7 在相同 seed 子集为 `2/6`。固定同一 flow noise 的 128 样本离线检查中，T9 的 action MSE 为 `0.003641`，略好于 T7 的 `0.003820`。因此不应继续以离线 flow loss 作为 checkpoint 的主要选择依据。
 
-## 7. 下一版架构：LAP6 + SEC284
+## 7. 下一版架构：LAP6 + LaWM + SEC284
 
 ```text
-三视角 RGB + 当前 EEF
+三视角 RGB ──> 冻结 DINO token [B,3,256,768]
+        ├── LAP6(+ EEF) → 32-D latent action → LaWM → visual subgoal
+        └── SEC284(task-specific learned queries) → [B,284,768] condition
+
+visual subgoal + current vision + SEC284 condition + 独立 EEF
         ↓
-冻结 DINO 三视角 token [B,768,768]
-        ├── LAP6 → 32-D latent action → LaWM → visual subgoal
-        └── SEC284 → [B,284,768] → Action Expert
+Action Expert → 36-step action chunk
 ```
 
-SEC284 是与 LAP6 并行的独立条件编码器，而不是 LAP7–10。建议用 284 个 learned query 经 4 层 Transformer decoder 直接 cross-attend 全部三视角 DINO token，同时融合当前 EEF，可选融合 detached LAP6 latent。预计参数量约 32–38M。
+SEC284 是与 LAP6 并行的单任务条件编码器，而不是 LAP7–10。本轮固定实现 SEC284-L：284 个 task-specific learned queries、8 层、hidden 768、12 heads、FFN 3072、约 76.6M 参数。它直接读取原始三视角 DINO token，输出与固定指令下官方 VLM condition 同形状的 `[B,284,768]` hidden state；不接收运行时语言、EEF、action、`z_lap` 或 LAP6 scene token，也不使用 `teacher_position_mean + residual`。
 
-训练分两步：
-
-1. 冻结 LAP6、LaWM 和 Action Expert，用离线缓存的 VLM `[284,768]` 条件训练 SEC284；部署时不需要 VLM。
-2. 保持 LAP6/LaWM 冻结，使用 RoboTwin 真实 action 监督联合调整 SEC284 和 Action Expert 后几层，并以闭环成功率而非 token MSE 选择 checkpoint。
+纯表示蒸馏已经完成 3000 step。当前第一阶段冻结 LAP6、LaWM 和 Action Expert，只训练 SEC284：保留 bounded-whitened/raw/cosine 表示锚点与显式跨样本动态约束，并加入同 noise/time 的 Expert velocity KD 和小权重官方 flow loss。SEC284 输入仍只有三视角 DINO token；action、EEF、LAP6 输出均不得进入 SEC284。
 
 ## 8. 文档索引
 
@@ -163,10 +164,14 @@ SEC284 是与 LAP6 并行的独立条件编码器，而不是 LAP7–10。建议
 |---|---|
 | [timeline.md](../timeline.md) | 按时间排序的项目进展与当前状态 |
 | 本页 | 当前结构、数据口径、实验结论与下一步 |
+| [VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md](VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md) | SEC284-L 的精确模块、缓存、loss、训练代码与表示验收标准 |
 
 ## 9. 推荐的后续顺序
 
 1. 保留 T7 作为当前无 VLM 的主 baseline，T8/T9 作为失败对照。
-2. 实现独立 SEC284，不再延续 LAP7–10 串联路线。
-3. 缓存 VLM 284-token teacher 输出，先完成 SEC284 表示预训练和离线检查。
-4. 在真实 action 监督下只小幅联合解冻 SEC284 与 Expert 后层，用固定 environment seed 和 policy flow noise 做配对闭环对比。
+2. 先固定 environment seed 和 policy flow noise，重新建立可配对的评估基线。
+3. 为固定指令生成完整的 `24,140 train / 1,749 val / 1,749 test` VLM condition cache，并验证缓存对齐。
+4. 实现唯一规格 SEC284-L，不再延续 LAP7–10，也不训练 B/XL；先做 64/256-sample 可记忆性测试。
+5. 使用完整数据训练 10 个 epoch，并按 episode-held-out condition loss 选择 checkpoint。
+6. 完成 test、视角遮挡、condition shuffle 和 mean-only 对照；本阶段不使用 action 或闭环指标。
+7. 只有表示验收通过后，才另行设计 Action Expert 接入与 RoboTwin 评估。

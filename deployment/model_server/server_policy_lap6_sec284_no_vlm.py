@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""VLM-free RoboTwin server for LAP8, LAP10 variants, or SEC284."""
+"""VLM-free RoboTwin server using only the Stage-1 LAP6 path and SEC284.
+
+This server intentionally does not load a LAP8 checkpoint and never produces a
+LAP8 latent.  The route is:
+
+    three RGB views -> DINO -> LAP6 z_lap -> official LaWM decoder
+                              + SEC284(features) -> Action Expert
+
+The released Action Expert receives ``h_vlm=None`` and SEC284 as ``h_lap``.
+"""
 
 from __future__ import annotations
 
@@ -21,7 +30,6 @@ from starVLA.model.framework.latent_world.batch_utils import (
 )
 from starVLA.model.framework.latent_world.runtime.output_mapper import map_policy_infer_output
 from starVLA.model.lap_stage1 import LAP60M, count_parameters
-from starVLA.model.lap_stage2 import LAP8, LAP10, LAP10V3
 from starVLA.model.sec284 import SEC284Config, SEC284L
 from tools.train_lap8_phase1 import load_action_expert
 
@@ -29,9 +37,7 @@ from tools.train_lap8_phase1 import load_action_expert
 LOGGER = logging.getLogger(__name__)
 DEFAULT_POLICY = "results/Checkpoints/robotwin/lawam_robotwin_sft_release/final_model/pytorch_model.pt"
 DEFAULT_STAGE1 = "outputs/lap_stage1_task14_3view_joint_3000step/stage1_phase2_step0003000.pt"
-DEFAULT_LAP8 = "outputs/lap8_phase1_task14_1000step/lap8_phase1_step0001000.pt"
-DEFAULT_LAP10 = "outputs/lap10_alignment_task14_1000step/lap10_step0001000.pt"
-DEFAULT_LAP10V3_STATS = "cache/lap10_task14_vlm_teacher_8192/position_stats.pt"
+DEFAULT_SEC284 = "outputs/sec284_l_bs32_3000step/step-003000.pt"
 DEFAULT_STATE_STATS = "cache/lap_stage1_task14/state_stats.json"
 DEFAULT_EXPERT = "cache/lap8_phase1_official_action_expert.pt"
 DEFAULT_LAM_CKPT = "latent_action_model/logs/dino_large_vae/lam_release/checkpoints/pytorch_model.pt"
@@ -93,19 +99,14 @@ def _build_inputs(
     return visual, state, hz, embodiment
 
 
-class LAP8NoVLMPolicy:
-    """DINO -> LAP8 -> LaWM -> released Action Expert, with no VLM allocation."""
+class LAP6SEC284NoVLMPolicy:
+    """Stage-1 LAP6 + SEC284 condition + released Action Expert, no VLM."""
 
     def __init__(
         self,
         *,
         stage1_checkpoint: str | Path,
-        lap8_checkpoint: str | Path,
-        lap10_checkpoint: str | Path | None,
-        lap10v3_checkpoint: str | Path | None,
-        joint_checkpoint: str | Path | None,
-        sec284_checkpoint: str | Path | None,
-        lap10v3_stats: str | Path,
+        sec284_checkpoint: str | Path,
         state_stats: str | Path,
         expert_checkpoint: str | Path,
         lam_checkpoint: str | Path,
@@ -115,66 +116,28 @@ class LAP8NoVLMPolicy:
         self.device = torch.device(device)
         started = time.perf_counter()
 
+        # The Stage-1 artifact contains the trained LAP6 and official LaWM
+        # decoder.  No LAP8 state or model is loaded in this process.
         stage1 = torch.load(stage1_checkpoint, map_location="cpu", weights_only=True)
-        lap8_obj = torch.load(lap8_checkpoint, map_location="cpu", weights_only=True)
-        joint_obj = (
-            torch.load(joint_checkpoint, map_location="cpu", weights_only=True, mmap=True)
-            if joint_checkpoint is not None else None
-        )
-        condition_choices = sum(
-            item is not None
-            for item in (lap10_checkpoint, lap10v3_checkpoint, joint_checkpoint, sec284_checkpoint)
-        )
-        if condition_choices > 1:
-            raise ValueError("Choose only one of LAP10, LAP10V3, joint, or SEC284")
-        if joint_checkpoint is not None and (lap10_checkpoint is not None or lap10v3_checkpoint is not None):
-            raise ValueError("--joint-checkpoint already supplies LAP10V3; do not also pass LAP10/LAP10V3")
-        lap6 = LAP60M(num_views=3, view_dropout=0.0)
-        if lap10v3_checkpoint is not None or joint_obj is not None:
-            lap6.load_state_dict({
-                key.removeprefix("lap6."): value
-                for key, value in lap8_obj["lap8"].items()
-                if key.startswith("lap6.")
-            }, strict=True)
-            stats = torch.load(lap10v3_stats, map_location="cpu", weights_only=True)
-            lap = LAP10V3(lap6, stats["position_mean"], view_dropout=0.0)
-            lap10v3_obj = joint_obj if joint_obj is not None else torch.load(
-                lap10v3_checkpoint, map_location="cpu", weights_only=True
-            )
-            lap.load_state_dict(lap10v3_obj["lap10v3"], strict=True)
-            self.lap_mode = "lap10v3_joint" if joint_obj is not None else "lap10v3"
-        else:
-            lap8 = LAP8(lap6, view_dropout=0.0)
-            lap8.load_state_dict(lap8_obj["lap8"], strict=True)
-            lap = lap8
-            self.lap_mode = "sec284" if sec284_checkpoint is not None else "lap8"
-        if lap10_checkpoint is not None:
-            lap10_obj = torch.load(lap10_checkpoint, map_location="cpu", weights_only=True)
-            lap = LAP10(lap8, output_tokens=284)
-            lap.load_state_dict(lap10_obj["lap10"], strict=True)
-            self.lap_mode = "lap10"
-        self.lap = lap.to(self.device, torch.float32).eval()
-        self.sec284: SEC284L | None = None
-        if sec284_checkpoint is not None:
-            sec_obj = torch.load(
-                sec284_checkpoint, map_location="cpu", weights_only=False, mmap=True
-            )
-            self.sec284 = SEC284L(SEC284Config(**sec_obj["config"]))
-            self.sec284.load_state_dict(sec_obj["sec284"], strict=True)
-            self.sec284 = self.sec284.to(self.device, torch.float32).eval()
+        if "lap" not in stage1 or "lawm_decoder" not in stage1:
+            raise ValueError("Stage-1 checkpoint must contain `lap` and `lawm_decoder` states")
+        self.lap = LAP60M(num_views=3, view_dropout=0.0)
+        self.lap.load_state_dict(stage1["lap"], strict=True)
+        self.lap = self.lap.to(self.device, torch.float32).eval()
+
+        sec_obj = torch.load(sec284_checkpoint, map_location="cpu", weights_only=False, mmap=True)
+        if "config" not in sec_obj or "sec284" not in sec_obj:
+            raise ValueError("SEC284 checkpoint must contain `config` and `sec284` states")
+        self.sec284 = SEC284L(SEC284Config(**sec_obj["config"]))
+        self.sec284.load_state_dict(sec_obj["sec284"], strict=True)
+        self.sec284 = self.sec284.to(self.device, torch.float32).eval()
 
         self.lam = load_latent_action_model(lam_checkpoint, lam_yaml)
         self.lam.decoder.load_state_dict(stage1["lawm_decoder"], strict=True)
         self.lam = self.lam.to(self.device, torch.float32).eval()
 
         self.expert = load_action_expert(Path(expert_checkpoint)).to(self.device, torch.float32).eval()
-        if joint_obj is not None:
-            self.expert.load_state_dict(joint_obj["expert"], strict=True)
-            LOGGER.info("Loaded jointly fine-tuned Action Expert from %s", joint_checkpoint)
-            del joint_obj
-        modules = [self.lap, self.lam, self.expert]
-        if self.sec284 is not None:
-            modules.append(self.sec284)
+        modules = [self.lap, self.sec284, self.lam, self.expert]
         for module in modules:
             for parameter in module.parameters():
                 parameter.requires_grad_(False)
@@ -184,16 +147,12 @@ class LAP8NoVLMPolicy:
         torch.cuda.synchronize(self.device)
         allocated = torch.cuda.memory_allocated(self.device) / 1024**3
         reserved = torch.cuda.memory_reserved(self.device) / 1024**3
-        sec284_summary = (
-            f" SEC284={count_parameters(self.sec284):,}" if self.sec284 is not None else ""
-        )
         LOGGER.info(
-            "Loaded FP32 no-VLM policy in %.1fs: LAP(%s)=%s%s LAM=%s Expert=%s; "
-            "CUDA allocated=%.2fGiB reserved=%.2fGiB",
+            "Loaded LAP6+SEC284 no-VLM policy in %.1fs: LAP6=%s SEC284=%s LAM=%s Expert=%s; "
+            "CUDA allocated=%.2fGiB reserved=%.2fGiB; no LAP8 loaded",
             time.perf_counter() - started,
-            self.lap_mode.upper(),
             f"{count_parameters(self.lap):,}",
-            sec284_summary,
+            f"{count_parameters(self.sec284):,}",
             f"{count_parameters(self.lam):,}",
             f"{count_parameters(self.expert):,}",
             allocated,
@@ -224,11 +183,8 @@ class LAP8NoVLMPolicy:
         h_t = features[:, 0]
         lap_out = self.lap(features, normalized_state)
         h_t1 = self._decode(self.lam.decoder, h_t, lap_out["z_lap"])
+        cond_lap = self.sec284(features)
         batch_size = h_t.shape[0]
-        if self.sec284 is not None:
-            cond_lap = self.sec284(features)
-        else:
-            cond_lap = lap_out["cond_lap10"] if self.lap_mode == "lap10" else lap_out["cond_lap"]
         actions = self.expert.sample_actions_cfg(
             h_t=h_t,
             h_t1_star=h_t1,
@@ -263,32 +219,22 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ckpt-path", default=DEFAULT_POLICY, help="Official checkpoint path used only for client metadata")
     parser.add_argument("--stage1-checkpoint", default=DEFAULT_STAGE1)
-    parser.add_argument("--lap8-checkpoint", default=DEFAULT_LAP8)
-    parser.add_argument("--lap10-checkpoint", default=None, help="Enable LAP10 and use this 284-token checkpoint for the Expert condition")
-    parser.add_argument("--lap10v3-checkpoint", default=None, help="Enable LAP10V3 284-token Expert condition")
-    parser.add_argument("--joint-checkpoint", default=None, help="Load jointly fine-tuned LAP10V3 and Action Expert")
-    parser.add_argument("--sec284-checkpoint", default=None, help="Use SEC284 condition with the frozen LAP8/LAP6 latent-action path")
-    parser.add_argument("--lap10v3-stats", default=DEFAULT_LAP10V3_STATS)
+    parser.add_argument("--sec284-checkpoint", default=DEFAULT_SEC284)
     parser.add_argument("--state-stats", default=DEFAULT_STATE_STATS)
     parser.add_argument("--expert-checkpoint", default=DEFAULT_EXPERT)
     parser.add_argument("--lam-checkpoint", default=DEFAULT_LAM_CKPT)
     parser.add_argument("--lam-yaml", default=DEFAULT_LAM_YAML)
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=11018)
+    parser.add_argument("--port", type=int, default=11052)
     parser.add_argument("--idle-timeout", type=int, default=-1)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    policy = LAP8NoVLMPolicy(
+    policy = LAP6SEC284NoVLMPolicy(
         stage1_checkpoint=args.stage1_checkpoint,
-        lap8_checkpoint=args.lap8_checkpoint,
-        lap10_checkpoint=args.lap10_checkpoint,
-        lap10v3_checkpoint=args.lap10v3_checkpoint,
-        joint_checkpoint=args.joint_checkpoint,
         sec284_checkpoint=args.sec284_checkpoint,
-        lap10v3_stats=args.lap10v3_stats,
         state_stats=args.state_stats,
         expert_checkpoint=args.expert_checkpoint,
         lam_checkpoint=args.lam_checkpoint,
@@ -296,22 +242,19 @@ def main() -> None:
     )
     metadata = {
         "env": "robotwin",
-        "server_type": "sec284_no_vlm" if args.sec284_checkpoint else ("lap10v3_expert_joint_no_vlm" if args.joint_checkpoint else ("lap10v3_no_vlm" if args.lap10v3_checkpoint else ("lap10_no_vlm" if args.lap10_checkpoint else "lap8_phase1_no_vlm"))),
+        "server_type": "lap6_sec284_no_vlm",
         "supported_eval_envs": ["robotwin"],
         "ckpt_path": str(Path(args.ckpt_path).expanduser().resolve()),
-        "framework_name": "LaWAM-SEC284-no-VLM" if args.sec284_checkpoint else ("LaWAM-LAP10V3-ExpertJoint-no-VLM" if args.joint_checkpoint else ("LaWAM-LAP10V3-no-VLM" if args.lap10v3_checkpoint else ("LaWAM-LAP10-no-VLM" if args.lap10_checkpoint else "LaWAM-LAP8-no-VLM"))),
+        "framework_name": "LaWAM-LAP6-SEC284-no-VLM",
         "requires_raw_eef": True,
         "vlm_loaded": False,
         "precision": "fp32",
-        "stage1_checkpoint": str(Path(args.stage1_checkpoint).resolve()),
-        "lap8_checkpoint": str(Path(args.lap8_checkpoint).resolve()),
-        "lap10_checkpoint": str(Path(args.lap10_checkpoint).resolve()) if args.lap10_checkpoint else None,
-        "lap10v3_checkpoint": str(Path(args.lap10v3_checkpoint).resolve()) if args.lap10v3_checkpoint else None,
-        "joint_checkpoint": str(Path(args.joint_checkpoint).resolve()) if args.joint_checkpoint else None,
-        "sec284_checkpoint": str(Path(args.sec284_checkpoint).resolve()) if args.sec284_checkpoint else None,
+        "lap_module": "LAP6",
+        "stage1_checkpoint": str(Path(args.stage1_checkpoint).expanduser().resolve()),
+        "sec284_checkpoint": str(Path(args.sec284_checkpoint).expanduser().resolve()),
+        "lap8_checkpoint": None,
     }
-    variant = "SEC284" if args.sec284_checkpoint else ("LAP10V3+ExpertJoint" if args.joint_checkpoint else ("LAP10V3" if args.lap10v3_checkpoint else ("LAP10" if args.lap10_checkpoint else "LAP8")))
-    LOGGER.info("Serving %s no-VLM policy on %s:%d", variant, args.host, args.port)
+    LOGGER.info("Serving LAP6+SEC284 no-VLM policy on %s:%d (no LAP8)", args.host, args.port)
     WebsocketPolicyServer(
         policy=policy,
         host=args.host,

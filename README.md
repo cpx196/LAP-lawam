@@ -5,25 +5,28 @@
 [![Status](https://img.shields.io/badge/status-research-orange)](timeline.md)
 [![Upstream](https://img.shields.io/badge/upstream-RLinf%2FLaWAM-6b7280)](https://github.com/RLinf/LaWAM)
 
-这是 **cpx196** 基于 [RLinf/LaWAM](https://github.com/RLinf/LaWAM) 开发的个人研究仓库，而不是 LaWAM 官方发布仓库。项目聚焦于 RoboTwin 单任务环境，用轻量 LAP 和专用场景条件模块替代 Qwen3-VL-2B 的在线推理，同时保留 LaWM 的视觉子目标能力。
+这是 **cpx196** 基于 [RLinf/LaWAM](https://github.com/RLinf/LaWAM) 开发的个人研究仓库，而不是 LaWAM 官方发布仓库。项目聚焦于 RoboTwin 单任务环境，用轻量 LAP 和 SEC284 替代 Qwen3-VL-2B 的在线推理，同时保留 LaWM 的视觉子目标能力。
 
 ## 研究目标
 
-当前固定任务为 `move_pillbottle_pad`：Aloha-AgileX 双臂机器人将药瓶抓取并放到蓝色垫上。输入包含主视角、左腕视角、右侧视角以及当前 16-D 双臂 EEF state。
+当前固定任务为 `move_pillbottle_pad`：Aloha-AgileX 双臂机器人将药瓶抓取并放到蓝色垫上。策略运行时输入包含主视角、左腕视角、右腕视角以及当前 16-D 双臂 EEF state；任务语义固定在 SEC284 的 learned queries 中，不运行语言编码器。
 
 目标架构：
 
 ```text
-三视角 RGB + 当前 EEF
+三视角 RGB ──> frozen DINO tokens
+        ├── LAP6(+ EEF) → 32-D latent action → LaWM → visual subgoal
+        └── SEC284(task-specific learned queries) → 284×768 VLM-compatible condition
+
+visual subgoal + current vision + SEC284 condition + 独立 EEF
         ↓
-      DINO tokens
-        ├── LAP6 → 32-D latent action → LaWM → visual subgoal
-        └── SEC284 → 284×768 scene condition → Action Expert
+Action Expert → 36-step action chunk
 ```
 
 - `LAP6 → LaWM` 保留已验证的 latent-action 分支。
-- `SEC284` 是计划中与 LAP6 并行的独立模块，将直接 cross-attend 三视角 DINO token。
-- 部署阶段不加载 Qwen VLM；VLM 只可在离线预训练中作为 teacher。
+- `SEC284` 是计划中与 LAP6 并行的单任务专用模块，以三视角 DINO latent 为动态输入，以 284 个 learned queries 固化任务先验，输出与官方 VLM condition 同形状的 `[B,284,768]` hidden state。
+- SEC284 不读取 EEF、`z_lap` 或 LAP6 token；EEF 只进入 Action Expert 的 proprioception 通道。
+- SEC284-L 已完成 3000-step 固定指令 VLM condition 蒸馏；当前进入冻结 LAP6、LaWM 与 Action Expert 的第一阶段行为对齐。SEC284 输入仍只有三视角 DINO latent，action 只做 flow/velocity 监督，不进入 SEC284。
 
 ## 当前进展
 
@@ -40,6 +43,7 @@
 ## 项目文档
 
 - [项目总览](docs/PROJECT_OVERVIEW_ZH.md)
+- [SEC284-L：VLM condition 蒸馏与冻结 Expert 联合训练设计](docs/VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md)
 - [实验时间线](timeline.md)
 - [LAP10V3 实验总账本](docs/LAP10V3_EXPERIMENT_LEDGER_ZH.md)
 - [Stage-1 60M 训练方案](docs/LAP_STAGE1_60M_TRAINING_PLAN_ZH.md)
