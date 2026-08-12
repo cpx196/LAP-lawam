@@ -414,6 +414,11 @@ def _slot_worker_main(
 
                 try:
                     task_env.setup_demo(now_ep_num=active_episode_id, seed=seed, is_test=True, **task_args)
+                    step_limit_override = os.getenv("ROBOTWIN_STEP_LIMIT_OVERRIDE")
+                    if step_limit_override:
+                        task_env.step_lim = int(step_limit_override)
+                        if task_env.step_lim <= 0:
+                            raise ValueError("ROBOTWIN_STEP_LIMIT_OVERRIDE must be positive")
                     instruction = _select_instruction(
                         task_name=task_name,
                         instruction_type=instruction_type,

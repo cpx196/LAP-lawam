@@ -3,26 +3,19 @@
 > 记录时间：2026-08-12 00:16 HKT  
 > 本地仓库：`/data/pxchen/LaWAM`  
 > 云端仓库：`cpx196/LAP-lawam`  
-> Git 快照：`main @ db8a0b5`  
+> Git 快照：以仓库 `main` 最新提交为准（本次更新将包含 2000-step 训练及 10 个 clean 测评结果）。
 > 当前主题：LAP6 + SEC284-L 替代在线 VLM condition，并通过冻结 Action Expert 的行为监督改善闭环效果。
 
 ## 1. 当前状态摘要
 
 本轮已经完成 SEC284-L 的模型实现、全量 VLM condition teacher cache、纯表征蒸馏、冻结 Action Expert 的 behavior KD、LAP6 无 VLM 闭环测试、固定 instruction 的真实 VLM shadow trace，以及全量 10-step Expert inference-grid cache。
 
-当前正在运行一轮 1000-step inference-grid KD：
+此前已完成一轮 1000-step inference-grid KD；当前 Expert grid-KD 续训和部署测评也已完成：
 
-- tmux：`sec284_grid_1000`
-- GPU：3、4、5、6
-- local batch size：32 / GPU
-- global batch size：128
-- 训练步数：1000
-- 每 250 step 保存一次
-- 当前快照：step 410/1000
-- 当前峰值显存：约 9.18 GiB / rank
-- 输出目录：`outputs/sec284_inference_grid_kd_1000step`
-- 日志：`outputs/sec284_inference_grid_kd_1000step/train.log`
-- 已有 checkpoint：`step-000250.pt`
+- 2000-step Expert grid-KD 输出：`outputs/sec284_expert_grid_kd_2000step`
+- 最终日志：`outputs/sec284_expert_grid_kd_2000step/train.log`
+- 部署 checkpoint：`step-001000_deploy.pt`、`step-001500_deploy.pt`、`step-002000_deploy.pt`
+- 当前经验上的部署 best：500-step checkpoint（需以固定离线验证进一步确认）
 
 但当前训练曲线**不能直接证明已经收敛，也不能直接证明没有学习**。主要原因是每个 batch 随机抽一个 denoising grid step，日志中的 `grid_kd` 混合了不同难度的 k；同时当前 total loss 被 representation loss 主导，grid 项只占很小的标量比例。此外，当前 grid trainer 没有沿用旧 behavior-KD trainer 中的显式 dynamic loss，这是一个需要优先核查的实现差异。
 
@@ -704,7 +697,7 @@ LR=1e-7, uniform inference-grid KD, enc_vlm frozen
 
 续训脚本使用 `--start-step 500 --steps 1500`，因此日志中的 step 是绝对 step（501/2000 到 2000/2000），grid step 仍按 10 个 inference-grid step 循环。500-step checkpoint 没有保存 AdamW optimizer 状态，续训时重新初始化 optimizer，但加载的是 500-step Expert 权重。
 
-截至本更新，训练仍在运行，约为 `1160/2000`；step-1000 checkpoint 已保存。
+训练已完成 `2000/2000`；最终日志显示 `grid_kd=0.000908`，并已生成 1500/2000 的部署 checkpoint。
 
 ### 14.2 train loss 与闭环结果
 
@@ -723,12 +716,16 @@ step 501-1000   mean grid_kd ≈ 0.000861
 |---|---:|---|
 | 500 step | 0/1 | 能接触并夹住瓶子，后段有短暂抬升/搬运尝试，但最终失稳 |
 | 1000 step | 0/1 | 接触后更早失稳，瓶子较快被碰倒，未形成稳定抬升 |
+| 1500 step | 0/1 | 未形成成功闭环 |
+| 2000 step | 0/1 | 未形成成功闭环 |
 
 结果目录：
 
 ```text
 results/eval_runs/sec284_expert_grid_kd_step500_clean_seed0_1x/
 results/eval_runs/sec284_expert_grid_kd_step1000_clean_seed0_1x/
+results/eval_runs/sec284_expert_grid_kd_step1500_clean_seed0_1x/
+results/eval_runs/sec284_expert_grid_kd_step2000_clean_seed0_1x/
 ```
 
 本轮没有跑 randomized。当前经验上的 best checkpoint 是 500 step；不能按总 `grid_kd` 单调选择 checkpoint。1000 step 的退化提示当前 loss 与下游存在 objective mismatch，可能是关键 gripper/抬升维度被均匀平均，或全量 Expert 继续更新后偏离 500-step 的有效策略。
@@ -751,7 +748,7 @@ tools/run_lap6_sec284_no_vlm_clean_1x.sh
 tools/run_lap6_sec284_no_vlm_paired_1x.sh
 ```
 
-`run_lap6_sec284_no_vlm_clean_1x.sh` 支持只跑一个 clean episode，避免在当前阶段把 randomized 结果混进判断。
+`run_lap6_sec284_no_vlm_clean_1x.sh` 支持通过 `ROBOTWIN_TEST_NUM` 批量跑固定 clean episode，并支持通过 `ROBOTWIN_STEP_LIMIT_OVERRIDE` 覆盖 episode 步数。
 
 ### 14.4 后续建议
 
@@ -760,6 +757,25 @@ tools/run_lap6_sec284_no_vlm_paired_1x.sh
 3. 若后续 checkpoint 仍不如 500，下一轮从 500 重启，优先尝试一个简单的 500-step anchor，而不是继续增加多项 loss；
 4. 增加 held-out、按 `k=0..9` 拆分的 grid validation，并单独记录 gripper/抬升相关动作误差。
 
+## 15. 2026-08-12 当前进度：500-step clean 10x
+
+为确认 500-step checkpoint 的稳定性，使用与此前一致的 LAP6 + SEC284 no-VLM、`move_pillbottle_pad`、`demo_clean`、replan=36，固定跑 10 个 episode；本轮不跑 randomized：
+
+```text
+checkpoint: outputs/sec284_expert_grid_kd_500step/step-000500_deploy.pt
+output: results/eval_runs/sec284_expert_grid_kd_step500_clean10
+timestamp: 20260812_162222
+```
+
+结果：**0/10（0%）**，10 个 episode 均执行到 400/400 步。seed 为 100002、100005、100006、100007、100008、100009、100010、100011、100013、100015。严格成功率仍为 0%，但这不否定视频中观察到的接触、夹持和短暂抬升迹象；后续仍应结合动作阶段指标和固定 held-out 验证选择 checkpoint，不能仅按 total/grid train loss 选择。
+
+正式结果与视频：
+
+```text
+results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/summary.json
+results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/episode*.mp4
+```
+
 ---
 
-本文件记录的是 2026-08-12 13:45 HKT 的状态快照。当前训练仍在运行，step、checkpoint 和 GPU 状态应以实时日志为准。
+本文件记录的是 2026-08-12 16:40 HKT 的状态快照。训练进程已结束；如需继续实验，应从固定验证和 500-step checkpoint 对照开始。
