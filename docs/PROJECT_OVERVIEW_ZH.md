@@ -1,6 +1,6 @@
 # LaWAM × RoboTwin 项目总览
 
-> 更新：2026-08-12（Asia/Hong_Kong）
+> 更新：2026-08-13（Asia/Hong_Kong）
 > 工作目录：`/data/pxchen/LaWAM`  
 > 当前范围：RoboTwin 单任务 `move_pillbottle_pad`（任务 14）  
 > 时间线：仓库根目录 [timeline.md](../timeline.md)
@@ -18,7 +18,10 @@
 5. FlowOnly 实验从 T7 恢复、冻结 LAP/LaWM、只更新 Expert，最终离线 action MSE 小幅改善，但 RoboTwin 3+3 仅 `1/6`，未超过 T7 的同 seed `2/6`。
 6. 当前不再继续修补串联的 LAP7–10。下一版统一实现单任务 SEC284：以三视角 DINO latent 为动态输入，以 284 个 learned queries 固化任务先验，输出 `[B,284,768]` 并蒸馏固定指令下的官方 VLM condition；EEF、LAP6 输出和 teacher position mean 均不得进入 SEC284。完整设计见 [VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md](VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md)。
 
-7. SEC284 接入 Action Expert 后，500-step grid-KD checkpoint 的 clean 视频已经出现接触、夹持和短暂抬升/搬运尝试；1000-step 虽然继续训练，clean 视频反而更早失稳。当前应把 500 step 作为经验 best，不按总 `grid_kd` 单独选 checkpoint。
+7. SEC284 接入 Action Expert 后，500-step grid-KD checkpoint 的 clean 视频已经出现接触、夹持和短暂抬升/搬运尝试；1000-step 虽然继续训练，clean 视频反而更早失稳。1500/2000-step 也未形成成功闭环；500 step 是当前经验 best，但 clean 10x 仍为 `0/10`，不应写成任务成功。
+8. SEC284 的 held-out 表征结果为 cosine `0.955959`、dynamic R² `0.724421`、std ratio `0.8701`：没有完全塌缩，但动态幅度比 VLM 小约 13%。这解释了为什么 cosine 不低而闭环仍可能失败。
+9. 在真实 VLM 成功轨迹的 shadow trace 中，clean 的平均 action MSE 为 `0.011049`、grid velocity MSE 为 `0.034429`、gripper sign agreement 为 `0.941667`；少数关键重规划点的 flow 后段误差明显放大。
+10. 2026-08-13 同一 randomized seed `100001` 下，原始 VLM 和 LAP6+官方 VLM 均为 `1/1`，说明随机环境本身不是必然失败；该对照不等同于 SEC284 成功。
 
 ## 2. 任务、数据与评估口径
 
@@ -70,7 +73,7 @@ DINO / LAM vision encoder（冻结）
         ↓
 三视角 DINO token [B,3,256,768]
         ├── LAP6 → z_lap [B,1,32] → LaWM → h_t1（视觉子目标）
-        └── LAP10V3 → cond_lap [B,284,768]
+        └── SEC284-L → condition [B,284,768]
                                       ↓
 当前主视角 h_t + h_t1 + cond_lap → Action Expert → 36-step action chunk
 ```
@@ -79,15 +82,15 @@ DINO / LAM vision encoder（冻结）
 |---|---|---|
 | LAP6 | `starVLA/model/lap_stage1.py` | 三视角/EEF 到 32-D latent action；输出供 LaWM 使用 |
 | LaWM | `latent_action_model/`，由 Stage-1 checkpoint 加载 | 根据主视角与 `z_lap` 预测未来视觉特征 `h_t1` |
-| LAP10V3 | `starVLA/model/lap_stage2.py` | 生成 284×768 的 Expert 条件 token |
+| SEC284-L | `starVLA/model/sec284.py` | 从三视角 DINO latent 生成 284×768 的 Expert 条件 token |
 | Action Expert | `starVLA/model/framework/vlas/flowmatching_expert.py` | 通过 conditional flow matching 生成 action chunk |
-| 无 VLM 部署 | `deployment/model_server/server_policy_lap8_no_vlm.py` | DINO → LAP/LaWM/Expert 的 FP32 RoboTwin 服务 |
+| 无 VLM 部署 | `deployment/model_server/server_policy_lap6_sec284_no_vlm.py` | DINO → LAP6/LaWM/SEC284/Expert 的 FP32 RoboTwin 服务 |
 
-重要边界：LAP6 的 `z_lap` 是 LaWM 的输入；LAP10V3 的 `cond_lap` 是 Action Expert 的语义条件。两条链路在代码与训练中分开维护。
+重要边界：LAP6 的 `z_lap` 是 LaWM 的输入；SEC284-L 的 `condition` 是 Action Expert 的语义条件。两条链路在代码与训练中分开维护。LAP10V3 的 `cond_lap` 只作为历史实验记录，不是当前主线。
 
 ## 4. 实验脉络
 
-完整训练日志、checkpoint 和 RoboTwin `summary.json` 保留在本地工作区的 `logs/`、`outputs/` 与 `results/eval_runs/` 下；本页只记录可追踪的项目结论。
+完整 checkpoint、cache、视频和二进制 trace 仍保留在本地工作区；本次更新将 SEC284 训练日志、评测日志、`summary.json`、`meta.json`、`run.log` 和 `_result.txt` 按原路径提交，具体索引见 [SEC284 当前状态与原始证据索引](SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。
 
 | ID | 实验 | 核心变化 | 结论 |
 |---|---|---|---|
@@ -100,6 +103,9 @@ DINO / LAM vision encoder（冻结）
 | T7 | LAP10V3 + Expert joint | flow + token alignment | 闭环 `4/10`，当前无 VLM baseline |
 | T8 | AR-2000 | 全量真实 action；无 teacher | 闭环 `1/10`，低于 T7 |
 | T9 | FlowOnly-1000 | T7 初始化；冻结 LAP；仅官方 flow | 离线略好，闭环 `1/6`，未超过 T7 |
+| T10 | SEC284 表征蒸馏 | 三视角 DINO → 284 token | cosine `0.955959`；dynamic R² `0.724421`；std ratio `0.8701` |
+| T11 | SEC284 frozen behavior-KD | 冻结 LAP6/LaWM/Expert，只更新 SEC284 | batch std ratio 约 `0.924`；闭环仍需固定复核 |
+| T12 | SEC284 output/grid-KD | inference-grid velocity KD | 500-step 经验 best；clean 10x `0/10` |
 
 ## 5. 已定位的风险
 
@@ -156,7 +162,7 @@ Action Expert → 36-step action chunk
 
 SEC284 是与 LAP6 并行的单任务条件编码器，而不是 LAP7–10。本轮固定实现 SEC284-L：284 个 task-specific learned queries、8 层、hidden 768、12 heads、FFN 3072、约 76.6M 参数。它直接读取原始三视角 DINO token，输出与固定指令下官方 VLM condition 同形状的 `[B,284,768]` hidden state；不接收运行时语言、EEF、action、`z_lap` 或 LAP6 scene token，也不使用 `teacher_position_mean + residual`。
 
-纯表示蒸馏已经完成 3000 step。当前第一阶段冻结 LAP6、LaWM 和 Action Expert，只训练 SEC284：保留 bounded-whitened/raw/cosine 表示锚点与显式跨样本动态约束，并加入同 noise/time 的 Expert velocity KD 和小权重官方 flow loss。SEC284 输入仍只有三视角 DINO token；action、EEF、LAP6 输出均不得进入 SEC284。
+纯表示蒸馏已经完成 3000 step。冻结 Expert 的 behavior-KD 与 output-primary inference-grid KD 也已完成；另有 Expert-only inference-grid KD 从 500 续训到总计 2000 step。SEC284 输入仍只有三视角 DINO token；action、EEF、LAP6 输出均不得进入 SEC284。当前需要固定 held-out、按 `k=0..9` 验证各 checkpoint，再决定下一轮闭环，而不是继续按混合 train loss 盲目延长。
 
 ## 8. 文档索引
 
@@ -164,14 +170,15 @@ SEC284 是与 LAP6 并行的单任务条件编码器，而不是 LAP7–10。本
 |---|---|
 | [timeline.md](../timeline.md) | 按时间排序的项目进展与当前状态 |
 | 本页 | 当前结构、数据口径、实验结论与下一步 |
+| [SEC284 当前状态与原始证据索引](SEC284_CURRENT_STATUS_2026-08-13_ZH.md) | 2026-08-13 的训练、闭环、shadow trace 和原始日志/JSON 路径 |
 | [VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md](VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md) | SEC284-L 的精确模块、缓存、loss、训练代码与表示验收标准 |
 
 ## 9. 推荐的后续顺序
 
-1. 保留 T7 作为当前无 VLM 的主 baseline，T8/T9 作为失败对照。
+1. 保留 T7 作为历史无 VLM baseline，SEC284 500-step 作为当前经验候选；T8/T9 作为失败对照。
 2. 先固定 environment seed 和 policy flow noise，重新建立可配对的评估基线。
 3. 为固定指令生成完整的 `24,140 train / 1,749 val / 1,749 test` VLM condition cache，并验证缓存对齐。
 4. 实现唯一规格 SEC284-L，不再延续 LAP7–10，也不训练 B/XL；先做 64/256-sample 可记忆性测试。
 5. 使用完整数据训练 10 个 epoch，并按 episode-held-out condition loss 选择 checkpoint。
 6. 完成 test、视角遮挡、condition shuffle 和 mean-only 对照；本阶段不使用 action 或闭环指标。
-7. 只有表示验收通过后，才另行设计 Action Expert 接入与 RoboTwin 评估。
+7. 对 behavior-KD、output-primary 和 500-step Expert checkpoint 做同口径 held-out / `k=0..9` 验证，并按抓取、抬升、搬运、放置阶段拆分动作误差。

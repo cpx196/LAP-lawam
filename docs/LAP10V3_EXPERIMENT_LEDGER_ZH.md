@@ -389,3 +389,20 @@ clean/randomized 成功率
 ~~~
 
 如果只完成训练但还没有闭环测试，状态写“训练完成，闭环待测”；如果环境或进程异常，另写“工程失败”，不要直接写成“模型失败”。
+
+---
+
+## 13. 2026-08-13：SEC284 当前阶段归档
+
+LAP10/LAP10V3 的历史实验记录继续保留在本账本中；当前主线已转为 LAP6 + SEC284。最新状态、原始日志和 JSON 证据索引见：[SEC284 当前状态与原始证据索引](SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。
+
+摘要：
+
+~~~text
+SEC284 表征 held-out：raw MSE 0.060777，cosine 0.955959，dynamic R² 0.724421，std ratio 0.8701。
+Frozen behavior-KD、output-primary inference-grid KD 已完成；Expert-only grid-KD 从 500 续训至总计 2000 step。
+Expert-only 500/1000/1500/2000 的 clean 1+1 均为 0/1；500-step clean 10x 为 0/10。
+2026-08-13 同一 randomized seed 100001 下，原始 VLM 与 LAP6+官方 VLM 各为 1/1。
+~~~
+
+500-step 只是视频动作质量上的经验候选，不是已验证成功模型；同 seed VLM 对照用于排除“随机环境必然失败”，不代表 SEC284 成功。

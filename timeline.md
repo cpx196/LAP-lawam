@@ -76,10 +76,19 @@
 
 - 固定 SEC284、LAP6、LaWM 和 `enc_vlm`，只训练官方 Action Expert；使用 uniform inference-grid velocity KD，4 卡 `1,3,4,5`，local batch 8、global batch 32、学习率 `1e-7`。
 - 首轮 500 step 完成，保存 `outputs/sec284_expert_grid_kd_500step/step-000500.pt`；训练 `grid_kd` 从约 `0.00104` 的早期区间降到约 `0.00090`，但该指标不是闭环成功指标。
-- 从 500 step 续训到总计 2000 step；续训使用绝对 step offset，当前仍在运行。step-1000 checkpoint 已保存。
+- 从 500 step 续训到总计 2000 step；续训使用绝对 step offset，已正常完成并保存 1000/1500/2000 部署 checkpoint。
 - 固定 LAP6 + SEC284 no-VLM、clean、seed `100002` 的 1+1 闭环：500 step 和 1000 step 均为 `0/1`，但视频显示 500 step 已出现接触、夹持和短暂抬升/搬运尝试；1000 step 更早失稳并碰倒瓶子。
 - 当前经验上的 best checkpoint 是 500 step。结论再次确认：不要按总 train loss 单独选择 checkpoint；teacher-forcing velocity MSE 与真实闭环存在 objective mismatch。randomized 本轮暂不评估。
 - 详细状态、输出目录和后续建议见 [SEC284 grid-KD handoff](docs/HANDOFF_2026-08-12_01_SEC284_GRID_KD_ZH.md)。
+
+## 2026-08-12～13：SEC284 结果归档与同 seed 随机对照
+
+- SEC284 表征 held-out 结果归档：raw MSE `0.060777`、whitened MSE `0.025876`、cosine `0.955959`、dynamic R² `0.724421`、std ratio `0.8701`。这表示公共任务语义接近，但跨画面动态仍比 VLM 小约 13%。
+- Frozen behavior-KD 末段 batch 指标约为 raw MSE `0.050708`、behavior KD `0.002951`、std ratio `0.9241`；output-primary 2000-step 末段 `repr=0.062496`、`grid_kd=0.000812`、`std_ratio=0.9209`。两者均需固定 held-out 验证，不能只凭训练日志选 checkpoint。
+- Expert-only inference-grid KD 从 500 续训到总计 2000 step。500/1000/1500/2000 的 clean 1+1 均为 `0/1`；500-step clean 10x 为 `0/10`。500-step 视频中仍观察到接触、夹持和短暂抬升/搬运迹象，因此保留为经验候选而非成功模型。
+- 真实 VLM 成功轨迹 shadow trace 的 clean 平均 action MSE 为 `0.011049`、grid velocity MSE 为 `0.034429`、gripper sign agreement 为 `0.941667`；少数重规划点的 flow 后段误差显著放大。
+- 2026-08-13 在同一 randomized seed `100001` 下，原始 VLM 和 LAP6+官方 VLM 各为 `1/1`（139/141 steps），说明随机环境不是该任务失败的充分原因；该结果不是 SEC284 成功率。
+- 原始 SEC284 训练/评测日志、JSON/JSONL 和 RoboTwin元数据已按原路径归档到 Git；视频、checkpoint、cache、二进制 trace 和图片仍排除。详见 [SEC284 当前状态与原始证据索引](docs/SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。
 
 ## 后续维护规则
 

@@ -1,0 +1,417 @@
+W0812 00:41:04.092000 3148794 site-packages/torch/distributed/run.py:774] 
+W0812 00:41:04.092000 3148794 site-packages/torch/distributed/run.py:774] *****************************************
+W0812 00:41:04.092000 3148794 site-packages/torch/distributed/run.py:774] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0812 00:41:04.092000 3148794 site-packages/torch/distributed/run.py:774] *****************************************
+08/12 [00:41:14] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/12 [00:41:14] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/12 [00:41:14] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/12 [00:41:15] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+[data] full_samples=24,140 world=4 local_batch=32 grid_cache=cache/sec284_task14_inference_grid/train
+[model] trainable=SEC284(76,624,896) frozen=LAP6,LaWM,ActionExpert
+[objective] mode=output-primary uniform_action_weights=True steps_per_epoch=189 planned_epochs=10.582
+[training-loss] step=1/2000 total=0.019243 repr=0.061871 grid_kd=0.002108
+[train-state] step=1/2000 epoch=0.005 grid_step=1/10 lambda_condition=0.27694 condition_grad_cos=0.0098 std_ratio=0.9241 sec_grad=0.2103 lr=6.000e-08 step_time=17.95s peak_cuda_rank0=8.64GiB
+[training-loss] step=10/2000 total=0.017529 repr=0.061855 grid_kd=0.001728
+[train-state] step=10/2000 epoch=0.053 grid_step=3/10 lambda_condition=0.25539 condition_grad_cos=0.0104 std_ratio=0.9222 sec_grad=0.1716 lr=3.300e-07 step_time=18.10s peak_cuda_rank0=9.23GiB
+[training-loss] step=20/2000 total=0.014653 repr=0.062109 grid_kd=0.001222
+[train-state] step=20/2000 epoch=0.106 grid_step=6/10 lambda_condition=0.21622 condition_grad_cos=0.0089 std_ratio=0.9220 sec_grad=0.1538 lr=6.300e-07 step_time=16.62s peak_cuda_rank0=9.23GiB
+[training-loss] step=30/2000 total=0.014716 repr=0.061442 grid_kd=0.001366
+[train-state] step=30/2000 epoch=0.159 grid_step=6/10 lambda_condition=0.21732 condition_grad_cos=0.0124 std_ratio=0.9227 sec_grad=0.1889 lr=9.300e-07 step_time=16.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=40/2000 total=0.016147 repr=0.061863 grid_kd=0.001813
+[train-state] step=40/2000 epoch=0.212 grid_step=10/10 lambda_condition=0.23169 condition_grad_cos=0.0089 std_ratio=0.9193 sec_grad=0.2001 lr=1.230e-06 step_time=17.11s peak_cuda_rank0=9.23GiB
+[training-loss] step=50/2000 total=0.015556 repr=0.062472 grid_kd=0.001330
+[train-state] step=50/2000 epoch=0.265 grid_step=6/10 lambda_condition=0.22776 condition_grad_cos=0.0083 std_ratio=0.9150 sec_grad=0.1507 lr=1.530e-06 step_time=16.70s peak_cuda_rank0=9.23GiB
+[training-loss] step=60/2000 total=0.015026 repr=0.062707 grid_kd=0.001222
+[train-state] step=60/2000 epoch=0.317 grid_step=10/10 lambda_condition=0.22013 condition_grad_cos=0.0082 std_ratio=0.9175 sec_grad=0.1799 lr=1.830e-06 step_time=15.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=70/2000 total=0.015986 repr=0.062383 grid_kd=0.001396
+[train-state] step=70/2000 epoch=0.370 grid_step=3/10 lambda_condition=0.23390 condition_grad_cos=0.0121 std_ratio=0.9217 sec_grad=0.1677 lr=2.130e-06 step_time=14.53s peak_cuda_rank0=9.23GiB
+[training-loss] step=80/2000 total=0.014142 repr=0.061974 grid_kd=0.001260
+[train-state] step=80/2000 epoch=0.423 grid_step=6/10 lambda_condition=0.20783 condition_grad_cos=0.0099 std_ratio=0.9205 sec_grad=0.1403 lr=2.430e-06 step_time=15.09s peak_cuda_rank0=9.23GiB
+[training-loss] step=90/2000 total=0.013027 repr=0.062258 grid_kd=0.001382
+[train-state] step=90/2000 epoch=0.476 grid_step=6/10 lambda_condition=0.18703 condition_grad_cos=0.0107 std_ratio=0.9181 sec_grad=0.1560 lr=2.730e-06 step_time=15.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=100/2000 total=0.014111 repr=0.063129 grid_kd=0.001605
+[train-state] step=100/2000 epoch=0.529 grid_step=4/10 lambda_condition=0.19806 condition_grad_cos=0.0131 std_ratio=0.9172 sec_grad=0.1630 lr=3.000e-06 step_time=15.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=110/2000 total=0.014319 repr=0.062792 grid_kd=0.001490
+[train-state] step=110/2000 epoch=0.582 grid_step=10/10 lambda_condition=0.20433 condition_grad_cos=0.0086 std_ratio=0.9178 sec_grad=0.1490 lr=3.000e-06 step_time=15.73s peak_cuda_rank0=9.23GiB
+[training-loss] step=120/2000 total=0.013219 repr=0.062898 grid_kd=0.001244
+[train-state] step=120/2000 epoch=0.635 grid_step=2/10 lambda_condition=0.19039 condition_grad_cos=0.0130 std_ratio=0.9172 sec_grad=0.1092 lr=2.999e-06 step_time=13.85s peak_cuda_rank0=9.23GiB
+[training-loss] step=130/2000 total=0.014774 repr=0.063129 grid_kd=0.001646
+[train-state] step=130/2000 epoch=0.688 grid_step=2/10 lambda_condition=0.20795 condition_grad_cos=0.0107 std_ratio=0.9204 sec_grad=0.1618 lr=2.998e-06 step_time=13.54s peak_cuda_rank0=9.23GiB
+[training-loss] step=140/2000 total=0.015767 repr=0.063327 grid_kd=0.001652
+[train-state] step=140/2000 epoch=0.741 grid_step=4/10 lambda_condition=0.22285 condition_grad_cos=0.0103 std_ratio=0.9166 sec_grad=0.1624 lr=2.997e-06 step_time=14.15s peak_cuda_rank0=9.23GiB
+[training-loss] step=150/2000 total=0.014788 repr=0.063595 grid_kd=0.001438
+[train-state] step=150/2000 epoch=0.794 grid_step=9/10 lambda_condition=0.20998 condition_grad_cos=0.0126 std_ratio=0.9178 sec_grad=0.1316 lr=2.995e-06 step_time=13.90s peak_cuda_rank0=9.23GiB
+[training-loss] step=160/2000 total=0.014703 repr=0.062784 grid_kd=0.001473
+[train-state] step=160/2000 epoch=0.847 grid_step=7/10 lambda_condition=0.21067 condition_grad_cos=0.0105 std_ratio=0.9200 sec_grad=0.1523 lr=2.993e-06 step_time=13.96s peak_cuda_rank0=9.23GiB
+[training-loss] step=170/2000 total=0.015413 repr=0.063238 grid_kd=0.001630
+[train-state] step=170/2000 epoch=0.899 grid_step=6/10 lambda_condition=0.21795 condition_grad_cos=0.0091 std_ratio=0.9154 sec_grad=0.1729 lr=2.991e-06 step_time=13.91s peak_cuda_rank0=9.23GiB
+[training-loss] step=180/2000 total=0.013824 repr=0.063146 grid_kd=0.001257
+[train-state] step=180/2000 epoch=0.952 grid_step=1/10 lambda_condition=0.19909 condition_grad_cos=0.0098 std_ratio=0.9164 sec_grad=0.1289 lr=2.988e-06 step_time=13.91s peak_cuda_rank0=9.23GiB
+[training-loss] step=190/2000 total=0.012774 repr=0.062900 grid_kd=0.001166
+[train-state] step=190/2000 epoch=1.005 grid_step=2/10 lambda_condition=0.18454 condition_grad_cos=0.0105 std_ratio=0.9206 sec_grad=0.1230 lr=2.985e-06 step_time=13.08s peak_cuda_rank0=9.23GiB
+[training-loss] step=200/2000 total=0.012268 repr=0.062643 grid_kd=0.001155
+[train-state] step=200/2000 epoch=1.058 grid_step=1/10 lambda_condition=0.17742 condition_grad_cos=0.0113 std_ratio=0.9195 sec_grad=0.1411 lr=2.982e-06 step_time=13.95s peak_cuda_rank0=9.23GiB
+[training-loss] step=210/2000 total=0.012549 repr=0.062438 grid_kd=0.001349
+[train-state] step=210/2000 epoch=1.111 grid_step=10/10 lambda_condition=0.17940 condition_grad_cos=0.0106 std_ratio=0.9189 sec_grad=0.1417 lr=2.978e-06 step_time=13.87s peak_cuda_rank0=9.23GiB
+[training-loss] step=220/2000 total=0.012889 repr=0.062999 grid_kd=0.001447
+[train-state] step=220/2000 epoch=1.164 grid_step=10/10 lambda_condition=0.18160 condition_grad_cos=0.0146 std_ratio=0.9183 sec_grad=0.1438 lr=2.974e-06 step_time=13.76s peak_cuda_rank0=9.23GiB
+[training-loss] step=230/2000 total=0.012577 repr=0.063060 grid_kd=0.001236
+[train-state] step=230/2000 epoch=1.217 grid_step=2/10 lambda_condition=0.17983 condition_grad_cos=0.0103 std_ratio=0.9173 sec_grad=0.1145 lr=2.969e-06 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=240/2000 total=0.012045 repr=0.062838 grid_kd=0.001181
+[train-state] step=240/2000 epoch=1.270 grid_step=6/10 lambda_condition=0.17288 condition_grad_cos=0.0097 std_ratio=0.9170 sec_grad=0.1116 lr=2.964e-06 step_time=13.70s peak_cuda_rank0=9.23GiB
+[training-loss] step=250/2000 total=0.011880 repr=0.063261 grid_kd=0.001152
+[train-state] step=250/2000 epoch=1.323 grid_step=6/10 lambda_condition=0.16958 condition_grad_cos=0.0140 std_ratio=0.9193 sec_grad=0.1198 lr=2.959e-06 step_time=13.78s peak_cuda_rank0=9.23GiB
+[training-loss] step=260/2000 total=0.013574 repr=0.063051 grid_kd=0.001325
+[train-state] step=260/2000 epoch=1.376 grid_step=3/10 lambda_condition=0.19425 condition_grad_cos=0.0113 std_ratio=0.9184 sec_grad=0.1260 lr=2.953e-06 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=270/2000 total=0.011855 repr=0.063119 grid_kd=0.000988
+[train-state] step=270/2000 epoch=1.429 grid_step=7/10 lambda_condition=0.17214 condition_grad_cos=0.0092 std_ratio=0.9176 sec_grad=0.1053 lr=2.947e-06 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=280/2000 total=0.011568 repr=0.062716 grid_kd=0.001175
+[train-state] step=280/2000 epoch=1.481 grid_step=4/10 lambda_condition=0.16572 condition_grad_cos=0.0117 std_ratio=0.9214 sec_grad=0.1019 lr=2.941e-06 step_time=13.60s peak_cuda_rank0=9.23GiB
+[training-loss] step=290/2000 total=0.011429 repr=0.063354 grid_kd=0.001139
+[train-state] step=290/2000 epoch=1.534 grid_step=3/10 lambda_condition=0.16239 condition_grad_cos=0.0104 std_ratio=0.9181 sec_grad=0.1006 lr=2.934e-06 step_time=13.70s peak_cuda_rank0=9.23GiB
+[training-loss] step=300/2000 total=0.012246 repr=0.062884 grid_kd=0.001316
+[train-state] step=300/2000 epoch=1.587 grid_step=5/10 lambda_condition=0.17378 condition_grad_cos=0.0082 std_ratio=0.9181 sec_grad=0.1203 lr=2.927e-06 step_time=13.79s peak_cuda_rank0=9.23GiB
+[training-loss] step=310/2000 total=0.011949 repr=0.063242 grid_kd=0.001088
+[train-state] step=310/2000 epoch=1.640 grid_step=3/10 lambda_condition=0.17176 condition_grad_cos=0.0112 std_ratio=0.9170 sec_grad=0.1062 lr=2.919e-06 step_time=19.34s peak_cuda_rank0=9.23GiB
+[training-loss] step=320/2000 total=0.013860 repr=0.062947 grid_kd=0.001404
+[train-state] step=320/2000 epoch=1.693 grid_step=4/10 lambda_condition=0.19785 condition_grad_cos=0.0121 std_ratio=0.9192 sec_grad=0.1590 lr=2.912e-06 step_time=18.32s peak_cuda_rank0=9.23GiB
+[training-loss] step=330/2000 total=0.013163 repr=0.062994 grid_kd=0.001277
+[train-state] step=330/2000 epoch=1.746 grid_step=7/10 lambda_condition=0.18862 condition_grad_cos=0.0133 std_ratio=0.9176 sec_grad=0.1388 lr=2.904e-06 step_time=18.99s peak_cuda_rank0=9.23GiB
+[training-loss] step=340/2000 total=0.012298 repr=0.063225 grid_kd=0.001172
+[train-state] step=340/2000 epoch=1.799 grid_step=9/10 lambda_condition=0.17595 condition_grad_cos=0.0112 std_ratio=0.9156 sec_grad=0.1318 lr=2.895e-06 step_time=19.10s peak_cuda_rank0=9.23GiB
+[training-loss] step=350/2000 total=0.011788 repr=0.062883 grid_kd=0.001134
+[train-state] step=350/2000 epoch=1.852 grid_step=1/10 lambda_condition=0.16943 condition_grad_cos=0.0122 std_ratio=0.9198 sec_grad=0.1167 lr=2.886e-06 step_time=19.33s peak_cuda_rank0=9.23GiB
+[training-loss] step=360/2000 total=0.012621 repr=0.063194 grid_kd=0.001248
+[train-state] step=360/2000 epoch=1.905 grid_step=6/10 lambda_condition=0.17995 condition_grad_cos=0.0110 std_ratio=0.9197 sec_grad=0.1228 lr=2.877e-06 step_time=18.11s peak_cuda_rank0=9.23GiB
+[training-loss] step=370/2000 total=0.012356 repr=0.063386 grid_kd=0.001401
+[train-state] step=370/2000 epoch=1.958 grid_step=10/10 lambda_condition=0.17280 condition_grad_cos=0.0084 std_ratio=0.9191 sec_grad=0.1143 lr=2.868e-06 step_time=19.77s peak_cuda_rank0=9.23GiB
+[training-loss] step=380/2000 total=0.012632 repr=0.062824 grid_kd=0.001274
+[train-state] step=380/2000 epoch=2.011 grid_step=5/10 lambda_condition=0.18081 condition_grad_cos=0.0093 std_ratio=0.9175 sec_grad=0.1161 lr=2.858e-06 step_time=19.31s peak_cuda_rank0=9.23GiB
+[training-loss] step=390/2000 total=0.013278 repr=0.062893 grid_kd=0.001450
+[train-state] step=390/2000 epoch=2.063 grid_step=2/10 lambda_condition=0.18808 condition_grad_cos=0.0075 std_ratio=0.9198 sec_grad=0.1699 lr=2.848e-06 step_time=21.01s peak_cuda_rank0=9.23GiB
+[training-loss] step=400/2000 total=0.013427 repr=0.063213 grid_kd=0.001369
+[train-state] step=400/2000 epoch=2.116 grid_step=1/10 lambda_condition=0.19078 condition_grad_cos=0.0137 std_ratio=0.9178 sec_grad=0.1454 lr=2.837e-06 step_time=16.53s peak_cuda_rank0=9.23GiB
+[training-loss] step=410/2000 total=0.012715 repr=0.063306 grid_kd=0.001337
+[train-state] step=410/2000 epoch=2.169 grid_step=5/10 lambda_condition=0.17973 condition_grad_cos=0.0090 std_ratio=0.9163 sec_grad=0.1161 lr=2.827e-06 step_time=15.70s peak_cuda_rank0=9.23GiB
+[training-loss] step=420/2000 total=0.013023 repr=0.063152 grid_kd=0.001316
+[train-state] step=420/2000 epoch=2.222 grid_step=3/10 lambda_condition=0.18541 condition_grad_cos=0.0099 std_ratio=0.9166 sec_grad=0.1198 lr=2.815e-06 step_time=16.48s peak_cuda_rank0=9.23GiB
+[training-loss] step=430/2000 total=0.014243 repr=0.062905 grid_kd=0.001451
+[train-state] step=430/2000 epoch=2.275 grid_step=4/10 lambda_condition=0.20336 condition_grad_cos=0.0104 std_ratio=0.9187 sec_grad=0.1456 lr=2.804e-06 step_time=16.73s peak_cuda_rank0=9.23GiB
+[training-loss] step=440/2000 total=0.012909 repr=0.063197 grid_kd=0.001095
+[train-state] step=440/2000 epoch=2.328 grid_step=7/10 lambda_condition=0.18698 condition_grad_cos=0.0087 std_ratio=0.9181 sec_grad=0.1043 lr=2.792e-06 step_time=16.13s peak_cuda_rank0=9.23GiB
+[training-loss] step=450/2000 total=0.011932 repr=0.063110 grid_kd=0.001012
+[train-state] step=450/2000 epoch=2.381 grid_step=2/10 lambda_condition=0.17305 condition_grad_cos=0.0125 std_ratio=0.9164 sec_grad=0.1134 lr=2.780e-06 step_time=16.56s peak_cuda_rank0=9.23GiB
+[training-loss] step=460/2000 total=0.011642 repr=0.063007 grid_kd=0.001196
+[train-state] step=460/2000 epoch=2.434 grid_step=2/10 lambda_condition=0.16579 condition_grad_cos=0.0088 std_ratio=0.9208 sec_grad=0.1054 lr=2.768e-06 step_time=16.36s peak_cuda_rank0=9.23GiB
+[training-loss] step=470/2000 total=0.012571 repr=0.063148 grid_kd=0.001296
+[train-state] step=470/2000 epoch=2.487 grid_step=3/10 lambda_condition=0.17852 condition_grad_cos=0.0127 std_ratio=0.9173 sec_grad=0.1296 lr=2.755e-06 step_time=15.69s peak_cuda_rank0=9.23GiB
+[training-loss] step=480/2000 total=0.012317 repr=0.063269 grid_kd=0.001096
+[train-state] step=480/2000 epoch=2.540 grid_step=10/10 lambda_condition=0.17733 condition_grad_cos=0.0091 std_ratio=0.9167 sec_grad=0.1096 lr=2.742e-06 step_time=15.00s peak_cuda_rank0=9.23GiB
+[training-loss] step=490/2000 total=0.011669 repr=0.063421 grid_kd=0.001110
+[train-state] step=490/2000 epoch=2.593 grid_step=10/10 lambda_condition=0.16645 condition_grad_cos=0.0113 std_ratio=0.9175 sec_grad=0.1093 lr=2.729e-06 step_time=15.62s peak_cuda_rank0=9.23GiB
+[training-loss] step=500/2000 total=0.012861 repr=0.063447 grid_kd=0.001250
+[train-state] step=500/2000 epoch=2.646 grid_step=6/10 lambda_condition=0.18301 condition_grad_cos=0.0116 std_ratio=0.9194 sec_grad=0.1505 lr=2.715e-06 step_time=14.90s peak_cuda_rank0=9.23GiB
+[training-loss] step=510/2000 total=0.013216 repr=0.063194 grid_kd=0.001308
+[train-state] step=510/2000 epoch=2.698 grid_step=9/10 lambda_condition=0.18835 condition_grad_cos=0.0126 std_ratio=0.9180 sec_grad=0.1426 lr=2.701e-06 step_time=14.13s peak_cuda_rank0=9.23GiB
+[training-loss] step=520/2000 total=0.012692 repr=0.063072 grid_kd=0.001132
+[train-state] step=520/2000 epoch=2.751 grid_step=4/10 lambda_condition=0.18331 condition_grad_cos=0.0126 std_ratio=0.9192 sec_grad=0.1287 lr=2.687e-06 step_time=14.52s peak_cuda_rank0=9.23GiB
+[training-loss] step=530/2000 total=0.011926 repr=0.063074 grid_kd=0.000946
+[train-state] step=530/2000 epoch=2.804 grid_step=7/10 lambda_condition=0.17411 condition_grad_cos=0.0108 std_ratio=0.9190 sec_grad=0.1050 lr=2.673e-06 step_time=14.48s peak_cuda_rank0=9.23GiB
+[training-loss] step=540/2000 total=0.011182 repr=0.062968 grid_kd=0.001051
+[train-state] step=540/2000 epoch=2.857 grid_step=8/10 lambda_condition=0.16086 condition_grad_cos=0.0122 std_ratio=0.9180 sec_grad=0.1036 lr=2.658e-06 step_time=14.48s peak_cuda_rank0=9.23GiB
+[training-loss] step=550/2000 total=0.011164 repr=0.062677 grid_kd=0.001102
+[train-state] step=550/2000 epoch=2.910 grid_step=9/10 lambda_condition=0.16055 condition_grad_cos=0.0089 std_ratio=0.9193 sec_grad=0.1161 lr=2.643e-06 step_time=14.39s peak_cuda_rank0=9.23GiB
+[training-loss] step=560/2000 total=0.013194 repr=0.063035 grid_kd=0.001356
+[train-state] step=560/2000 epoch=2.963 grid_step=7/10 lambda_condition=0.18784 condition_grad_cos=0.0111 std_ratio=0.9166 sec_grad=0.1562 lr=2.628e-06 step_time=14.44s peak_cuda_rank0=9.23GiB
+[training-loss] step=570/2000 total=0.012938 repr=0.063563 grid_kd=0.001260
+[train-state] step=570/2000 epoch=3.016 grid_step=10/10 lambda_condition=0.18375 condition_grad_cos=0.0099 std_ratio=0.9185 sec_grad=0.1110 lr=2.612e-06 step_time=15.12s peak_cuda_rank0=9.23GiB
+[training-loss] step=580/2000 total=0.010812 repr=0.063132 grid_kd=0.000982
+[train-state] step=580/2000 epoch=3.069 grid_step=7/10 lambda_condition=0.15570 condition_grad_cos=0.0113 std_ratio=0.9183 sec_grad=0.0925 lr=2.597e-06 step_time=18.83s peak_cuda_rank0=9.23GiB
+[training-loss] step=590/2000 total=0.010466 repr=0.062813 grid_kd=0.000959
+[train-state] step=590/2000 epoch=3.122 grid_step=5/10 lambda_condition=0.15136 condition_grad_cos=0.0107 std_ratio=0.9169 sec_grad=0.0811 lr=2.581e-06 step_time=14.88s peak_cuda_rank0=9.23GiB
+[training-loss] step=600/2000 total=0.010901 repr=0.063237 grid_kd=0.000963
+[train-state] step=600/2000 epoch=3.175 grid_step=4/10 lambda_condition=0.15714 condition_grad_cos=0.0074 std_ratio=0.9179 sec_grad=0.0865 lr=2.564e-06 step_time=30.89s peak_cuda_rank0=9.23GiB
+[training-loss] step=610/2000 total=0.012239 repr=0.062962 grid_kd=0.001114
+[train-state] step=610/2000 epoch=3.228 grid_step=5/10 lambda_condition=0.17678 condition_grad_cos=0.0122 std_ratio=0.9198 sec_grad=0.1160 lr=2.548e-06 step_time=15.85s peak_cuda_rank0=9.23GiB
+[training-loss] step=620/2000 total=0.011475 repr=0.063380 grid_kd=0.001099
+[train-state] step=620/2000 epoch=3.280 grid_step=7/10 lambda_condition=0.16374 condition_grad_cos=0.0099 std_ratio=0.9167 sec_grad=0.1042 lr=2.531e-06 step_time=15.56s peak_cuda_rank0=9.23GiB
+[training-loss] step=630/2000 total=0.010741 repr=0.063346 grid_kd=0.000943
+[train-state] step=630/2000 epoch=3.333 grid_step=8/10 lambda_condition=0.15467 condition_grad_cos=0.0118 std_ratio=0.9200 sec_grad=0.0986 lr=2.514e-06 step_time=16.57s peak_cuda_rank0=9.23GiB
+[training-loss] step=640/2000 total=0.010285 repr=0.063013 grid_kd=0.001062
+[train-state] step=640/2000 epoch=3.386 grid_step=4/10 lambda_condition=0.14637 condition_grad_cos=0.0120 std_ratio=0.9196 sec_grad=0.1130 lr=2.497e-06 step_time=20.98s peak_cuda_rank0=9.23GiB
+[training-loss] step=650/2000 total=0.010917 repr=0.062994 grid_kd=0.000854
+[train-state] step=650/2000 epoch=3.439 grid_step=3/10 lambda_condition=0.15972 condition_grad_cos=0.0116 std_ratio=0.9183 sec_grad=0.0941 lr=2.479e-06 step_time=18.04s peak_cuda_rank0=9.23GiB
+[training-loss] step=660/2000 total=0.012793 repr=0.062525 grid_kd=0.001289
+[train-state] step=660/2000 epoch=3.492 grid_step=3/10 lambda_condition=0.18403 condition_grad_cos=0.0111 std_ratio=0.9203 sec_grad=0.1398 lr=2.461e-06 step_time=17.22s peak_cuda_rank0=9.23GiB
+[training-loss] step=670/2000 total=0.012083 repr=0.062655 grid_kd=0.000959
+[train-state] step=670/2000 epoch=3.545 grid_step=3/10 lambda_condition=0.17751 condition_grad_cos=0.0119 std_ratio=0.9190 sec_grad=0.1120 lr=2.444e-06 step_time=16.73s peak_cuda_rank0=9.23GiB
+[training-loss] step=680/2000 total=0.012625 repr=0.063171 grid_kd=0.001201
+[train-state] step=680/2000 epoch=3.598 grid_step=6/10 lambda_condition=0.18082 condition_grad_cos=0.0125 std_ratio=0.9170 sec_grad=0.1130 lr=2.425e-06 step_time=16.49s peak_cuda_rank0=9.23GiB
+[training-loss] step=690/2000 total=0.010641 repr=0.063031 grid_kd=0.000933
+[train-state] step=690/2000 epoch=3.651 grid_step=5/10 lambda_condition=0.15405 condition_grad_cos=0.0118 std_ratio=0.9215 sec_grad=0.0906 lr=2.407e-06 step_time=17.32s peak_cuda_rank0=9.23GiB
+[training-loss] step=700/2000 total=0.011174 repr=0.062471 grid_kd=0.000997
+[train-state] step=700/2000 epoch=3.704 grid_step=1/10 lambda_condition=0.16296 condition_grad_cos=0.0110 std_ratio=0.9212 sec_grad=0.1101 lr=2.388e-06 step_time=16.45s peak_cuda_rank0=9.23GiB
+[training-loss] step=710/2000 total=0.011054 repr=0.063104 grid_kd=0.000920
+[train-state] step=710/2000 epoch=3.757 grid_step=2/10 lambda_condition=0.16059 condition_grad_cos=0.0120 std_ratio=0.9171 sec_grad=0.0945 lr=2.370e-06 step_time=14.95s peak_cuda_rank0=9.23GiB
+[training-loss] step=720/2000 total=0.011647 repr=0.062731 grid_kd=0.001037
+[train-state] step=720/2000 epoch=3.810 grid_step=6/10 lambda_condition=0.16911 condition_grad_cos=0.0117 std_ratio=0.9180 sec_grad=0.0977 lr=2.351e-06 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=730/2000 total=0.012711 repr=0.062569 grid_kd=0.001245
+[train-state] step=730/2000 epoch=3.862 grid_step=9/10 lambda_condition=0.18321 condition_grad_cos=0.0091 std_ratio=0.9210 sec_grad=0.1179 lr=2.331e-06 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=740/2000 total=0.012926 repr=0.062889 grid_kd=0.001171
+[train-state] step=740/2000 epoch=3.915 grid_step=5/10 lambda_condition=0.18691 condition_grad_cos=0.0148 std_ratio=0.9187 sec_grad=0.1273 lr=2.312e-06 step_time=13.91s peak_cuda_rank0=9.23GiB
+[training-loss] step=750/2000 total=0.011644 repr=0.062533 grid_kd=0.001040
+[train-state] step=750/2000 epoch=3.968 grid_step=5/10 lambda_condition=0.16958 condition_grad_cos=0.0092 std_ratio=0.9180 sec_grad=0.0987 lr=2.293e-06 step_time=13.50s peak_cuda_rank0=9.23GiB
+[training-loss] step=760/2000 total=0.011846 repr=0.063376 grid_kd=0.001092
+[train-state] step=760/2000 epoch=4.021 grid_step=8/10 lambda_condition=0.16969 condition_grad_cos=0.0105 std_ratio=0.9183 sec_grad=0.1197 lr=2.273e-06 step_time=13.30s peak_cuda_rank0=9.23GiB
+[training-loss] step=770/2000 total=0.011575 repr=0.062842 grid_kd=0.001097
+[train-state] step=770/2000 epoch=4.074 grid_step=4/10 lambda_condition=0.16675 condition_grad_cos=0.0120 std_ratio=0.9196 sec_grad=0.1249 lr=2.253e-06 step_time=13.67s peak_cuda_rank0=9.23GiB
+[training-loss] step=780/2000 total=0.011474 repr=0.062870 grid_kd=0.001005
+[train-state] step=780/2000 epoch=4.127 grid_step=9/10 lambda_condition=0.16653 condition_grad_cos=0.0108 std_ratio=0.9205 sec_grad=0.0864 lr=2.233e-06 step_time=14.32s peak_cuda_rank0=9.23GiB
+[training-loss] step=790/2000 total=0.011282 repr=0.063000 grid_kd=0.001094
+[train-state] step=790/2000 epoch=4.180 grid_step=7/10 lambda_condition=0.16169 condition_grad_cos=0.0116 std_ratio=0.9201 sec_grad=0.1075 lr=2.213e-06 step_time=13.93s peak_cuda_rank0=9.23GiB
+[training-loss] step=800/2000 total=0.011179 repr=0.062562 grid_kd=0.000939
+[train-state] step=800/2000 epoch=4.233 grid_step=4/10 lambda_condition=0.16368 condition_grad_cos=0.0109 std_ratio=0.9184 sec_grad=0.1002 lr=2.192e-06 step_time=14.42s peak_cuda_rank0=9.23GiB
+[training-loss] step=810/2000 total=0.010819 repr=0.063162 grid_kd=0.001006
+[train-state] step=810/2000 epoch=4.286 grid_step=5/10 lambda_condition=0.15538 condition_grad_cos=0.0098 std_ratio=0.9176 sec_grad=0.0948 lr=2.172e-06 step_time=13.61s peak_cuda_rank0=9.23GiB
+[training-loss] step=820/2000 total=0.010728 repr=0.063043 grid_kd=0.000927
+[train-state] step=820/2000 epoch=4.339 grid_step=1/10 lambda_condition=0.15546 condition_grad_cos=0.0115 std_ratio=0.9203 sec_grad=0.0854 lr=2.151e-06 step_time=14.39s peak_cuda_rank0=9.23GiB
+[training-loss] step=830/2000 total=0.010136 repr=0.062857 grid_kd=0.000889
+[train-state] step=830/2000 epoch=4.392 grid_step=7/10 lambda_condition=0.14710 condition_grad_cos=0.0107 std_ratio=0.9182 sec_grad=0.0858 lr=2.130e-06 step_time=14.00s peak_cuda_rank0=9.23GiB
+[training-loss] step=840/2000 total=0.011371 repr=0.062892 grid_kd=0.000999
+[train-state] step=840/2000 epoch=4.444 grid_step=6/10 lambda_condition=0.16489 condition_grad_cos=0.0109 std_ratio=0.9182 sec_grad=0.0977 lr=2.109e-06 step_time=14.11s peak_cuda_rank0=9.23GiB
+[training-loss] step=850/2000 total=0.012475 repr=0.062742 grid_kd=0.001221
+[train-state] step=850/2000 epoch=4.497 grid_step=4/10 lambda_condition=0.17937 condition_grad_cos=0.0108 std_ratio=0.9183 sec_grad=0.1561 lr=2.088e-06 step_time=14.00s peak_cuda_rank0=9.23GiB
+[training-loss] step=860/2000 total=0.013158 repr=0.063212 grid_kd=0.001119
+[train-state] step=860/2000 epoch=4.550 grid_step=3/10 lambda_condition=0.19045 condition_grad_cos=0.0121 std_ratio=0.9194 sec_grad=0.1094 lr=2.067e-06 step_time=13.89s peak_cuda_rank0=9.23GiB
+[training-loss] step=870/2000 total=0.011629 repr=0.062791 grid_kd=0.000880
+[train-state] step=870/2000 epoch=4.603 grid_step=6/10 lambda_condition=0.17116 condition_grad_cos=0.0087 std_ratio=0.9186 sec_grad=0.0934 lr=2.046e-06 step_time=14.30s peak_cuda_rank0=9.23GiB
+[training-loss] step=880/2000 total=0.010600 repr=0.063045 grid_kd=0.000849
+[train-state] step=880/2000 epoch=4.656 grid_step=3/10 lambda_condition=0.15464 condition_grad_cos=0.0131 std_ratio=0.9183 sec_grad=0.0864 lr=2.024e-06 step_time=14.79s peak_cuda_rank0=9.23GiB
+[training-loss] step=890/2000 total=0.010398 repr=0.062559 grid_kd=0.000967
+[train-state] step=890/2000 epoch=4.709 grid_step=1/10 lambda_condition=0.15076 condition_grad_cos=0.0097 std_ratio=0.9211 sec_grad=0.0798 lr=2.003e-06 step_time=14.55s peak_cuda_rank0=9.23GiB
+[training-loss] step=900/2000 total=0.011533 repr=0.063056 grid_kd=0.001204
+[train-state] step=900/2000 epoch=4.762 grid_step=4/10 lambda_condition=0.16385 condition_grad_cos=0.0114 std_ratio=0.9174 sec_grad=0.1215 lr=1.981e-06 step_time=14.37s peak_cuda_rank0=9.23GiB
+[training-loss] step=910/2000 total=0.011689 repr=0.062938 grid_kd=0.001027
+[train-state] step=910/2000 epoch=4.815 grid_step=4/10 lambda_condition=0.16939 condition_grad_cos=0.0101 std_ratio=0.9188 sec_grad=0.1110 lr=1.960e-06 step_time=14.32s peak_cuda_rank0=9.23GiB
+[training-loss] step=920/2000 total=0.012106 repr=0.062715 grid_kd=0.001103
+[train-state] step=920/2000 epoch=4.868 grid_step=2/10 lambda_condition=0.17547 condition_grad_cos=0.0104 std_ratio=0.9216 sec_grad=0.1198 lr=1.938e-06 step_time=15.12s peak_cuda_rank0=9.23GiB
+[training-loss] step=930/2000 total=0.012511 repr=0.062694 grid_kd=0.001033
+[train-state] step=930/2000 epoch=4.921 grid_step=7/10 lambda_condition=0.18305 condition_grad_cos=0.0090 std_ratio=0.9207 sec_grad=0.1004 lr=1.916e-06 step_time=14.36s peak_cuda_rank0=9.23GiB
+[training-loss] step=940/2000 total=0.010969 repr=0.062950 grid_kd=0.000982
+[train-state] step=940/2000 epoch=4.974 grid_step=6/10 lambda_condition=0.15866 condition_grad_cos=0.0128 std_ratio=0.9181 sec_grad=0.0958 lr=1.894e-06 step_time=14.28s peak_cuda_rank0=9.23GiB
+[training-loss] step=950/2000 total=0.010079 repr=0.062537 grid_kd=0.000864
+[train-state] step=950/2000 epoch=5.026 grid_step=10/10 lambda_condition=0.14737 condition_grad_cos=0.0089 std_ratio=0.9219 sec_grad=0.0908 lr=1.872e-06 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=960/2000 total=0.009586 repr=0.063084 grid_kd=0.000863
+[train-state] step=960/2000 epoch=5.079 grid_step=7/10 lambda_condition=0.13826 condition_grad_cos=0.0094 std_ratio=0.9193 sec_grad=0.0871 lr=1.850e-06 step_time=14.19s peak_cuda_rank0=9.23GiB
+[training-loss] step=970/2000 total=0.009441 repr=0.062835 grid_kd=0.000834
+[train-state] step=970/2000 epoch=5.132 grid_step=5/10 lambda_condition=0.13697 condition_grad_cos=0.0083 std_ratio=0.9191 sec_grad=0.0880 lr=1.828e-06 step_time=13.85s peak_cuda_rank0=9.23GiB
+[training-loss] step=980/2000 total=0.010145 repr=0.062919 grid_kd=0.000977
+[train-state] step=980/2000 epoch=5.185 grid_step=1/10 lambda_condition=0.14567 condition_grad_cos=0.0085 std_ratio=0.9202 sec_grad=0.1007 lr=1.806e-06 step_time=14.02s peak_cuda_rank0=9.23GiB
+[training-loss] step=990/2000 total=0.010932 repr=0.063214 grid_kd=0.000926
+[train-state] step=990/2000 epoch=5.238 grid_step=2/10 lambda_condition=0.15829 condition_grad_cos=0.0114 std_ratio=0.9190 sec_grad=0.1032 lr=1.784e-06 step_time=13.88s peak_cuda_rank0=9.23GiB
+[training-loss] step=1000/2000 total=0.011044 repr=0.062623 grid_kd=0.000991
+[train-state] step=1000/2000 epoch=5.291 grid_step=10/10 lambda_condition=0.16055 condition_grad_cos=0.0112 std_ratio=0.9207 sec_grad=0.0848 lr=1.761e-06 step_time=13.87s peak_cuda_rank0=9.23GiB
+[training-loss] step=1010/2000 total=0.011286 repr=0.062987 grid_kd=0.001021
+[train-state] step=1010/2000 epoch=5.344 grid_step=1/10 lambda_condition=0.16300 condition_grad_cos=0.0121 std_ratio=0.9185 sec_grad=0.1089 lr=1.739e-06 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=1020/2000 total=0.011801 repr=0.062875 grid_kd=0.001056
+[train-state] step=1020/2000 epoch=5.397 grid_step=9/10 lambda_condition=0.17087 condition_grad_cos=0.0093 std_ratio=0.9198 sec_grad=0.1230 lr=1.717e-06 step_time=13.76s peak_cuda_rank0=9.23GiB
+[training-loss] step=1030/2000 total=0.011137 repr=0.062718 grid_kd=0.000790
+[train-state] step=1030/2000 epoch=5.450 grid_step=7/10 lambda_condition=0.16499 condition_grad_cos=0.0121 std_ratio=0.9201 sec_grad=0.0812 lr=1.695e-06 step_time=13.92s peak_cuda_rank0=9.23GiB
+[training-loss] step=1040/2000 total=0.010596 repr=0.062354 grid_kd=0.000854
+[train-state] step=1040/2000 epoch=5.503 grid_step=3/10 lambda_condition=0.15625 condition_grad_cos=0.0098 std_ratio=0.9197 sec_grad=0.0850 lr=1.672e-06 step_time=13.96s peak_cuda_rank0=9.23GiB
+[training-loss] step=1050/2000 total=0.011172 repr=0.062789 grid_kd=0.000927
+[train-state] step=1050/2000 epoch=5.556 grid_step=6/10 lambda_condition=0.16317 condition_grad_cos=0.0104 std_ratio=0.9193 sec_grad=0.1020 lr=1.650e-06 step_time=13.83s peak_cuda_rank0=9.23GiB
+[training-loss] step=1060/2000 total=0.011345 repr=0.063296 grid_kd=0.000854
+[train-state] step=1060/2000 epoch=5.608 grid_step=2/10 lambda_condition=0.16575 condition_grad_cos=0.0070 std_ratio=0.9175 sec_grad=0.0885 lr=1.628e-06 step_time=13.55s peak_cuda_rank0=9.23GiB
+[training-loss] step=1070/2000 total=0.011923 repr=0.062748 grid_kd=0.001054
+[train-state] step=1070/2000 epoch=5.661 grid_step=5/10 lambda_condition=0.17320 condition_grad_cos=0.0095 std_ratio=0.9198 sec_grad=0.1124 lr=1.605e-06 step_time=13.76s peak_cuda_rank0=9.23GiB
+[training-loss] step=1080/2000 total=0.011643 repr=0.062775 grid_kd=0.000877
+[train-state] step=1080/2000 epoch=5.714 grid_step=4/10 lambda_condition=0.17149 condition_grad_cos=0.0095 std_ratio=0.9194 sec_grad=0.0952 lr=1.583e-06 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=1090/2000 total=0.011115 repr=0.062526 grid_kd=0.000929
+[train-state] step=1090/2000 epoch=5.767 grid_step=4/10 lambda_condition=0.16287 condition_grad_cos=0.0107 std_ratio=0.9203 sec_grad=0.0868 lr=1.561e-06 step_time=13.50s peak_cuda_rank0=9.23GiB
+[training-loss] step=1100/2000 total=0.012051 repr=0.062685 grid_kd=0.001031
+[train-state] step=1100/2000 epoch=5.820 grid_step=8/10 lambda_condition=0.17581 condition_grad_cos=0.0089 std_ratio=0.9190 sec_grad=0.1102 lr=1.539e-06 step_time=13.82s peak_cuda_rank0=9.23GiB
+[training-loss] step=1110/2000 total=0.011496 repr=0.062668 grid_kd=0.000911
+[train-state] step=1110/2000 epoch=5.873 grid_step=7/10 lambda_condition=0.16891 condition_grad_cos=0.0067 std_ratio=0.9191 sec_grad=0.0888 lr=1.516e-06 step_time=13.82s peak_cuda_rank0=9.23GiB
+[training-loss] step=1120/2000 total=0.011404 repr=0.062807 grid_kd=0.000874
+[train-state] step=1120/2000 epoch=5.926 grid_step=7/10 lambda_condition=0.16770 condition_grad_cos=0.0101 std_ratio=0.9206 sec_grad=0.1089 lr=1.494e-06 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=1130/2000 total=0.011488 repr=0.062949 grid_kd=0.001012
+[train-state] step=1130/2000 epoch=5.979 grid_step=9/10 lambda_condition=0.16638 condition_grad_cos=0.0099 std_ratio=0.9194 sec_grad=0.1016 lr=1.472e-06 step_time=13.79s peak_cuda_rank0=9.23GiB
+[training-loss] step=1140/2000 total=0.010881 repr=0.063101 grid_kd=0.000841
+[train-state] step=1140/2000 epoch=6.032 grid_step=3/10 lambda_condition=0.15911 condition_grad_cos=0.0145 std_ratio=0.9192 sec_grad=0.0896 lr=1.450e-06 step_time=13.40s peak_cuda_rank0=9.23GiB
+[training-loss] step=1150/2000 total=0.011229 repr=0.062734 grid_kd=0.000963
+[train-state] step=1150/2000 epoch=6.085 grid_step=10/10 lambda_condition=0.16363 condition_grad_cos=0.0074 std_ratio=0.9207 sec_grad=0.0955 lr=1.428e-06 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=1160/2000 total=0.011360 repr=0.063290 grid_kd=0.000963
+[train-state] step=1160/2000 epoch=6.138 grid_step=6/10 lambda_condition=0.16428 condition_grad_cos=0.0098 std_ratio=0.9187 sec_grad=0.0944 lr=1.406e-06 step_time=13.49s peak_cuda_rank0=9.23GiB
+[training-loss] step=1170/2000 total=0.011220 repr=0.062621 grid_kd=0.000897
+[train-state] step=1170/2000 epoch=6.190 grid_step=8/10 lambda_condition=0.16483 condition_grad_cos=0.0112 std_ratio=0.9207 sec_grad=0.0964 lr=1.384e-06 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=1180/2000 total=0.011844 repr=0.062651 grid_kd=0.001151
+[train-state] step=1180/2000 epoch=6.243 grid_step=10/10 lambda_condition=0.17068 condition_grad_cos=0.0116 std_ratio=0.9211 sec_grad=0.1050 lr=1.362e-06 step_time=13.69s peak_cuda_rank0=9.23GiB
+[training-loss] step=1190/2000 total=0.011370 repr=0.063041 grid_kd=0.000957
+[train-state] step=1190/2000 epoch=6.296 grid_step=9/10 lambda_condition=0.16516 condition_grad_cos=0.0095 std_ratio=0.9190 sec_grad=0.1162 lr=1.340e-06 step_time=13.86s peak_cuda_rank0=9.23GiB
+[training-loss] step=1200/2000 total=0.010942 repr=0.062772 grid_kd=0.000927
+[train-state] step=1200/2000 epoch=6.349 grid_step=1/10 lambda_condition=0.15957 condition_grad_cos=0.0129 std_ratio=0.9199 sec_grad=0.1081 lr=1.319e-06 step_time=13.88s peak_cuda_rank0=9.23GiB
+[training-loss] step=1210/2000 total=0.011241 repr=0.062385 grid_kd=0.001088
+[train-state] step=1210/2000 epoch=6.402 grid_step=7/10 lambda_condition=0.16275 condition_grad_cos=0.0086 std_ratio=0.9218 sec_grad=0.1066 lr=1.297e-06 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=1220/2000 total=0.011117 repr=0.062795 grid_kd=0.000871
+[train-state] step=1220/2000 epoch=6.455 grid_step=5/10 lambda_condition=0.16317 condition_grad_cos=0.0103 std_ratio=0.9193 sec_grad=0.0892 lr=1.276e-06 step_time=13.82s peak_cuda_rank0=9.23GiB
+[training-loss] step=1230/2000 total=0.011795 repr=0.062876 grid_kd=0.001029
+[train-state] step=1230/2000 epoch=6.508 grid_step=6/10 lambda_condition=0.17122 condition_grad_cos=0.0070 std_ratio=0.9181 sec_grad=0.1143 lr=1.254e-06 step_time=13.64s peak_cuda_rank0=9.23GiB
+[training-loss] step=1240/2000 total=0.011961 repr=0.062678 grid_kd=0.000903
+[train-state] step=1240/2000 epoch=6.561 grid_step=7/10 lambda_condition=0.17636 condition_grad_cos=0.0101 std_ratio=0.9175 sec_grad=0.0981 lr=1.233e-06 step_time=13.78s peak_cuda_rank0=9.23GiB
+[training-loss] step=1250/2000 total=0.011876 repr=0.062888 grid_kd=0.000986
+[train-state] step=1250/2000 epoch=6.614 grid_step=10/10 lambda_condition=0.17318 condition_grad_cos=0.0072 std_ratio=0.9185 sec_grad=0.1108 lr=1.212e-06 step_time=13.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=1260/2000 total=0.011644 repr=0.063027 grid_kd=0.000871
+[train-state] step=1260/2000 epoch=6.667 grid_step=3/10 lambda_condition=0.17096 condition_grad_cos=0.0091 std_ratio=0.9193 sec_grad=0.0855 lr=1.191e-06 step_time=13.71s peak_cuda_rank0=9.23GiB
+[training-loss] step=1270/2000 total=0.011536 repr=0.062874 grid_kd=0.001091
+[train-state] step=1270/2000 epoch=6.720 grid_step=6/10 lambda_condition=0.16613 condition_grad_cos=0.0114 std_ratio=0.9194 sec_grad=0.1058 lr=1.170e-06 step_time=13.57s peak_cuda_rank0=9.23GiB
+[training-loss] step=1280/2000 total=0.010870 repr=0.062323 grid_kd=0.000830
+[train-state] step=1280/2000 epoch=6.772 grid_step=2/10 lambda_condition=0.16115 condition_grad_cos=0.0083 std_ratio=0.9207 sec_grad=0.0839 lr=1.149e-06 step_time=13.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=1290/2000 total=0.010356 repr=0.063089 grid_kd=0.000941
+[train-state] step=1290/2000 epoch=6.825 grid_step=5/10 lambda_condition=0.14924 condition_grad_cos=0.0101 std_ratio=0.9197 sec_grad=0.1010 lr=1.128e-06 step_time=13.58s peak_cuda_rank0=9.23GiB
+[training-loss] step=1300/2000 total=0.011404 repr=0.062772 grid_kd=0.000985
+[train-state] step=1300/2000 epoch=6.878 grid_step=2/10 lambda_condition=0.16591 condition_grad_cos=0.0115 std_ratio=0.9192 sec_grad=0.1176 lr=1.108e-06 step_time=13.45s peak_cuda_rank0=9.23GiB
+[training-loss] step=1310/2000 total=0.010994 repr=0.062448 grid_kd=0.000745
+[train-state] step=1310/2000 epoch=6.931 grid_step=2/10 lambda_condition=0.16413 condition_grad_cos=0.0098 std_ratio=0.9196 sec_grad=0.0759 lr=1.087e-06 step_time=13.41s peak_cuda_rank0=9.23GiB
+[training-loss] step=1320/2000 total=0.010917 repr=0.062475 grid_kd=0.000917
+[train-state] step=1320/2000 epoch=6.984 grid_step=7/10 lambda_condition=0.16008 condition_grad_cos=0.0128 std_ratio=0.9211 sec_grad=0.0982 lr=1.067e-06 step_time=13.52s peak_cuda_rank0=9.23GiB
+[training-loss] step=1330/2000 total=0.010303 repr=0.062751 grid_kd=0.000852
+[train-state] step=1330/2000 epoch=7.037 grid_step=1/10 lambda_condition=0.15063 condition_grad_cos=0.0098 std_ratio=0.9197 sec_grad=0.0859 lr=1.047e-06 step_time=13.12s peak_cuda_rank0=9.23GiB
+[training-loss] step=1340/2000 total=0.010298 repr=0.062843 grid_kd=0.000898
+[train-state] step=1340/2000 epoch=7.090 grid_step=5/10 lambda_condition=0.14959 condition_grad_cos=0.0109 std_ratio=0.9176 sec_grad=0.0944 lr=1.027e-06 step_time=13.51s peak_cuda_rank0=9.23GiB
+[training-loss] step=1350/2000 total=0.010351 repr=0.062317 grid_kd=0.000823
+[train-state] step=1350/2000 epoch=7.143 grid_step=1/10 lambda_condition=0.15290 condition_grad_cos=0.0089 std_ratio=0.9201 sec_grad=0.0906 lr=1.007e-06 step_time=13.56s peak_cuda_rank0=9.23GiB
+[training-loss] step=1360/2000 total=0.010491 repr=0.062859 grid_kd=0.000783
+[train-state] step=1360/2000 epoch=7.196 grid_step=8/10 lambda_condition=0.15445 condition_grad_cos=0.0102 std_ratio=0.9201 sec_grad=0.0854 lr=9.879e-07 step_time=13.61s peak_cuda_rank0=9.23GiB
+[training-loss] step=1370/2000 total=0.009380 repr=0.062390 grid_kd=0.000770
+[train-state] step=1370/2000 epoch=7.249 grid_step=8/10 lambda_condition=0.13800 condition_grad_cos=0.0101 std_ratio=0.9226 sec_grad=0.0738 lr=9.686e-07 step_time=13.50s peak_cuda_rank0=9.23GiB
+[training-loss] step=1380/2000 total=0.009377 repr=0.062422 grid_kd=0.000771
+[train-state] step=1380/2000 epoch=7.302 grid_step=1/10 lambda_condition=0.13787 condition_grad_cos=0.0087 std_ratio=0.9214 sec_grad=0.0816 lr=9.494e-07 step_time=13.23s peak_cuda_rank0=9.23GiB
+[training-loss] step=1390/2000 total=0.010062 repr=0.062635 grid_kd=0.000900
+[train-state] step=1390/2000 epoch=7.354 grid_step=7/10 lambda_condition=0.14629 condition_grad_cos=0.0076 std_ratio=0.9197 sec_grad=0.0942 lr=9.304e-07 step_time=13.69s peak_cuda_rank0=9.23GiB
+[training-loss] step=1400/2000 total=0.011440 repr=0.063140 grid_kd=0.000995
+[train-state] step=1400/2000 epoch=7.407 grid_step=7/10 lambda_condition=0.16541 condition_grad_cos=0.0082 std_ratio=0.9195 sec_grad=0.0990 lr=9.116e-07 step_time=13.52s peak_cuda_rank0=9.23GiB
+[training-loss] step=1410/2000 total=0.011779 repr=0.062746 grid_kd=0.000984
+[train-state] step=1410/2000 epoch=7.460 grid_step=7/10 lambda_condition=0.17203 condition_grad_cos=0.0092 std_ratio=0.9194 sec_grad=0.1040 lr=8.930e-07 step_time=13.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=1420/2000 total=0.010826 repr=0.062385 grid_kd=0.000749
+[train-state] step=1420/2000 epoch=7.513 grid_step=6/10 lambda_condition=0.16150 condition_grad_cos=0.0102 std_ratio=0.9205 sec_grad=0.0778 lr=8.747e-07 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=1430/2000 total=0.010532 repr=0.062915 grid_kd=0.000773
+[train-state] step=1430/2000 epoch=7.566 grid_step=6/10 lambda_condition=0.15511 condition_grad_cos=0.0100 std_ratio=0.9198 sec_grad=0.0792 lr=8.565e-07 step_time=13.64s peak_cuda_rank0=9.23GiB
+[training-loss] step=1440/2000 total=0.011073 repr=0.062930 grid_kd=0.000930
+[train-state] step=1440/2000 epoch=7.619 grid_step=8/10 lambda_condition=0.16122 condition_grad_cos=0.0077 std_ratio=0.9196 sec_grad=0.0970 lr=8.385e-07 step_time=13.62s peak_cuda_rank0=9.23GiB
+[training-loss] step=1450/2000 total=0.011312 repr=0.062709 grid_kd=0.000771
+[train-state] step=1450/2000 epoch=7.672 grid_step=7/10 lambda_condition=0.16808 condition_grad_cos=0.0115 std_ratio=0.9197 sec_grad=0.0898 lr=8.208e-07 step_time=13.62s peak_cuda_rank0=9.23GiB
+[training-loss] step=1460/2000 total=0.011220 repr=0.062616 grid_kd=0.000879
+[train-state] step=1460/2000 epoch=7.725 grid_step=3/10 lambda_condition=0.16511 condition_grad_cos=0.0155 std_ratio=0.9214 sec_grad=0.1031 lr=8.033e-07 step_time=13.44s peak_cuda_rank0=9.23GiB
+[training-loss] step=1470/2000 total=0.012839 repr=0.062752 grid_kd=0.001083
+[train-state] step=1470/2000 epoch=7.778 grid_step=4/10 lambda_condition=0.18735 condition_grad_cos=0.0119 std_ratio=0.9202 sec_grad=0.1170 lr=7.860e-07 step_time=13.37s peak_cuda_rank0=9.23GiB
+[training-loss] step=1480/2000 total=0.011329 repr=0.062184 grid_kd=0.000863
+[train-state] step=1480/2000 epoch=7.831 grid_step=8/10 lambda_condition=0.16832 condition_grad_cos=0.0113 std_ratio=0.9209 sec_grad=0.1021 lr=7.690e-07 step_time=13.48s peak_cuda_rank0=9.23GiB
+[training-loss] step=1490/2000 total=0.010455 repr=0.062394 grid_kd=0.000814
+[train-state] step=1490/2000 epoch=7.884 grid_step=5/10 lambda_condition=0.15451 condition_grad_cos=0.0101 std_ratio=0.9203 sec_grad=0.0895 lr=7.522e-07 step_time=13.54s peak_cuda_rank0=9.23GiB
+[training-loss] step=1500/2000 total=0.011153 repr=0.062743 grid_kd=0.000948
+[train-state] step=1500/2000 epoch=7.937 grid_step=7/10 lambda_condition=0.16263 condition_grad_cos=0.0122 std_ratio=0.9202 sec_grad=0.0964 lr=7.357e-07 step_time=13.70s peak_cuda_rank0=9.23GiB
+[training-loss] step=1510/2000 total=0.010619 repr=0.062757 grid_kd=0.000786
+[train-state] step=1510/2000 epoch=7.989 grid_step=2/10 lambda_condition=0.15670 condition_grad_cos=0.0114 std_ratio=0.9188 sec_grad=0.1021 lr=7.194e-07 step_time=13.53s peak_cuda_rank0=9.23GiB
+[training-loss] step=1520/2000 total=0.010266 repr=0.062497 grid_kd=0.000756
+[train-state] step=1520/2000 epoch=8.042 grid_step=3/10 lambda_condition=0.15217 condition_grad_cos=0.0096 std_ratio=0.9196 sec_grad=0.0962 lr=7.033e-07 step_time=12.76s peak_cuda_rank0=9.23GiB
+[training-loss] step=1530/2000 total=0.010374 repr=0.062525 grid_kd=0.000851
+[train-state] step=1530/2000 epoch=8.095 grid_step=6/10 lambda_condition=0.15232 condition_grad_cos=0.0060 std_ratio=0.9208 sec_grad=0.1087 lr=6.875e-07 step_time=13.27s peak_cuda_rank0=9.23GiB
+[training-loss] step=1540/2000 total=0.010692 repr=0.062858 grid_kd=0.000890
+[train-state] step=1540/2000 epoch=8.148 grid_step=3/10 lambda_condition=0.15593 condition_grad_cos=0.0107 std_ratio=0.9209 sec_grad=0.1016 lr=6.720e-07 step_time=13.48s peak_cuda_rank0=9.23GiB
+[training-loss] step=1550/2000 total=0.011036 repr=0.062858 grid_kd=0.000869
+[train-state] step=1550/2000 epoch=8.201 grid_step=9/10 lambda_condition=0.16175 condition_grad_cos=0.0084 std_ratio=0.9208 sec_grad=0.0800 lr=6.568e-07 step_time=13.41s peak_cuda_rank0=9.23GiB
+[training-loss] step=1560/2000 total=0.010504 repr=0.062748 grid_kd=0.000897
+[train-state] step=1560/2000 epoch=8.254 grid_step=9/10 lambda_condition=0.15311 condition_grad_cos=0.0113 std_ratio=0.9206 sec_grad=0.0899 lr=6.418e-07 step_time=13.19s peak_cuda_rank0=9.23GiB
+[training-loss] step=1570/2000 total=0.010872 repr=0.062234 grid_kd=0.000838
+[train-state] step=1570/2000 epoch=8.307 grid_step=8/10 lambda_condition=0.16125 condition_grad_cos=0.0094 std_ratio=0.9202 sec_grad=0.1048 lr=6.271e-07 step_time=13.34s peak_cuda_rank0=9.23GiB
+[training-loss] step=1580/2000 total=0.011388 repr=0.062546 grid_kd=0.000832
+[train-state] step=1580/2000 epoch=8.360 grid_step=9/10 lambda_condition=0.16877 condition_grad_cos=0.0092 std_ratio=0.9195 sec_grad=0.0936 lr=6.127e-07 step_time=13.71s peak_cuda_rank0=9.23GiB
+[training-loss] step=1590/2000 total=0.010475 repr=0.062495 grid_kd=0.000789
+[train-state] step=1590/2000 epoch=8.413 grid_step=6/10 lambda_condition=0.15499 condition_grad_cos=0.0089 std_ratio=0.9206 sec_grad=0.0829 lr=5.985e-07 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=1600/2000 total=0.010511 repr=0.062424 grid_kd=0.000853
+[train-state] step=1600/2000 epoch=8.466 grid_step=10/10 lambda_condition=0.15468 condition_grad_cos=0.0067 std_ratio=0.9217 sec_grad=0.0813 lr=5.847e-07 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=1610/2000 total=0.010161 repr=0.062601 grid_kd=0.000916
+[train-state] step=1610/2000 epoch=8.519 grid_step=10/10 lambda_condition=0.14770 condition_grad_cos=0.0095 std_ratio=0.9205 sec_grad=0.0806 lr=5.711e-07 step_time=13.54s peak_cuda_rank0=9.23GiB
+[training-loss] step=1620/2000 total=0.010545 repr=0.062451 grid_kd=0.000937
+[train-state] step=1620/2000 epoch=8.571 grid_step=9/10 lambda_condition=0.15386 condition_grad_cos=0.0114 std_ratio=0.9197 sec_grad=0.0957 lr=5.578e-07 step_time=13.60s peak_cuda_rank0=9.23GiB
+[training-loss] step=1630/2000 total=0.010248 repr=0.062534 grid_kd=0.000777
+[train-state] step=1630/2000 epoch=8.624 grid_step=5/10 lambda_condition=0.15154 condition_grad_cos=0.0099 std_ratio=0.9189 sec_grad=0.0849 lr=5.449e-07 step_time=13.68s peak_cuda_rank0=9.23GiB
+[training-loss] step=1640/2000 total=0.010168 repr=0.062495 grid_kd=0.000838
+[train-state] step=1640/2000 epoch=8.677 grid_step=1/10 lambda_condition=0.14931 condition_grad_cos=0.0111 std_ratio=0.9205 sec_grad=0.0765 lr=5.322e-07 step_time=13.61s peak_cuda_rank0=9.23GiB
+[training-loss] step=1650/2000 total=0.010169 repr=0.062820 grid_kd=0.000793
+[train-state] step=1650/2000 epoch=8.730 grid_step=3/10 lambda_condition=0.14924 condition_grad_cos=0.0090 std_ratio=0.9196 sec_grad=0.0784 lr=5.198e-07 step_time=13.67s peak_cuda_rank0=9.23GiB
+[training-loss] step=1660/2000 total=0.010809 repr=0.062825 grid_kd=0.000886
+[train-state] step=1660/2000 epoch=8.783 grid_step=5/10 lambda_condition=0.15795 condition_grad_cos=0.0096 std_ratio=0.9190 sec_grad=0.1036 lr=5.078e-07 step_time=13.68s peak_cuda_rank0=9.23GiB
+[training-loss] step=1670/2000 total=0.010426 repr=0.062608 grid_kd=0.000855
+[train-state] step=1670/2000 epoch=8.836 grid_step=6/10 lambda_condition=0.15287 condition_grad_cos=0.0090 std_ratio=0.9193 sec_grad=0.0828 lr=4.960e-07 step_time=13.61s peak_cuda_rank0=9.23GiB
+[training-loss] step=1680/2000 total=0.010086 repr=0.062989 grid_kd=0.000740
+[train-state] step=1680/2000 epoch=8.889 grid_step=1/10 lambda_condition=0.14837 condition_grad_cos=0.0099 std_ratio=0.9193 sec_grad=0.0730 lr=4.846e-07 step_time=13.67s peak_cuda_rank0=9.23GiB
+[training-loss] step=1690/2000 total=0.009869 repr=0.062392 grid_kd=0.000779
+[train-state] step=1690/2000 epoch=8.942 grid_step=8/10 lambda_condition=0.14568 condition_grad_cos=0.0131 std_ratio=0.9209 sec_grad=0.0787 lr=4.735e-07 step_time=13.95s peak_cuda_rank0=9.23GiB
+[training-loss] step=1700/2000 total=0.010296 repr=0.062729 grid_kd=0.000870
+[train-state] step=1700/2000 epoch=8.995 grid_step=9/10 lambda_condition=0.15029 condition_grad_cos=0.0101 std_ratio=0.9200 sec_grad=0.0910 lr=4.627e-07 step_time=13.57s peak_cuda_rank0=9.23GiB
+[training-loss] step=1710/2000 total=0.009933 repr=0.062487 grid_kd=0.000765
+[train-state] step=1710/2000 epoch=9.048 grid_step=7/10 lambda_condition=0.14675 condition_grad_cos=0.0081 std_ratio=0.9205 sec_grad=0.0845 lr=4.522e-07 step_time=13.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=1720/2000 total=0.009777 repr=0.062172 grid_kd=0.000787
+[train-state] step=1720/2000 epoch=9.101 grid_step=1/10 lambda_condition=0.14459 condition_grad_cos=0.0092 std_ratio=0.9206 sec_grad=0.0871 lr=4.421e-07 step_time=14.25s peak_cuda_rank0=9.23GiB
+[training-loss] step=1730/2000 total=0.009977 repr=0.062963 grid_kd=0.000772
+[train-state] step=1730/2000 epoch=9.153 grid_step=7/10 lambda_condition=0.14622 condition_grad_cos=0.0131 std_ratio=0.9200 sec_grad=0.0838 lr=4.323e-07 step_time=13.98s peak_cuda_rank0=9.23GiB
+[training-loss] step=1740/2000 total=0.011189 repr=0.062521 grid_kd=0.000889
+[train-state] step=1740/2000 epoch=9.206 grid_step=1/10 lambda_condition=0.16475 condition_grad_cos=0.0075 std_ratio=0.9202 sec_grad=0.0847 lr=4.228e-07 step_time=14.23s peak_cuda_rank0=9.23GiB
+[training-loss] step=1750/2000 total=0.010980 repr=0.062205 grid_kd=0.000775
+[train-state] step=1750/2000 epoch=9.259 grid_step=8/10 lambda_condition=0.16403 condition_grad_cos=0.0121 std_ratio=0.9208 sec_grad=0.0973 lr=4.137e-07 step_time=14.19s peak_cuda_rank0=9.23GiB
+[training-loss] step=1760/2000 total=0.011170 repr=0.062941 grid_kd=0.000864
+[train-state] step=1760/2000 epoch=9.312 grid_step=9/10 lambda_condition=0.16380 condition_grad_cos=0.0092 std_ratio=0.9196 sec_grad=0.0780 lr=4.049e-07 step_time=13.96s peak_cuda_rank0=9.23GiB
+[training-loss] step=1770/2000 total=0.010824 repr=0.062188 grid_kd=0.000722
+[train-state] step=1770/2000 epoch=9.365 grid_step=6/10 lambda_condition=0.16245 condition_grad_cos=0.0099 std_ratio=0.9211 sec_grad=0.0863 lr=3.965e-07 step_time=13.81s peak_cuda_rank0=9.23GiB
+[training-loss] step=1780/2000 total=0.010941 repr=0.062622 grid_kd=0.000797
+[train-state] step=1780/2000 epoch=9.418 grid_step=9/10 lambda_condition=0.16202 condition_grad_cos=0.0092 std_ratio=0.9195 sec_grad=0.0864 lr=3.883e-07 step_time=13.78s peak_cuda_rank0=9.23GiB
+[training-loss] step=1790/2000 total=0.009351 repr=0.062205 grid_kd=0.000630
+[train-state] step=1790/2000 epoch=9.471 grid_step=1/10 lambda_condition=0.14021 condition_grad_cos=0.0091 std_ratio=0.9199 sec_grad=0.0757 lr=3.806e-07 step_time=13.97s peak_cuda_rank0=9.23GiB
+[training-loss] step=1800/2000 total=0.010361 repr=0.062470 grid_kd=0.000801
+[train-state] step=1800/2000 epoch=9.524 grid_step=3/10 lambda_condition=0.15306 condition_grad_cos=0.0100 std_ratio=0.9201 sec_grad=0.1006 lr=3.731e-07 step_time=13.87s peak_cuda_rank0=9.23GiB
+[training-loss] step=1810/2000 total=0.009933 repr=0.062647 grid_kd=0.000603
+[train-state] step=1810/2000 epoch=9.577 grid_step=1/10 lambda_condition=0.14895 condition_grad_cos=0.0112 std_ratio=0.9210 sec_grad=0.0769 lr=3.661e-07 step_time=13.91s peak_cuda_rank0=9.23GiB
+[training-loss] step=1820/2000 total=0.010284 repr=0.062452 grid_kd=0.000733
+[train-state] step=1820/2000 epoch=9.630 grid_step=9/10 lambda_condition=0.15290 condition_grad_cos=0.0091 std_ratio=0.9204 sec_grad=0.0796 lr=3.594e-07 step_time=13.89s peak_cuda_rank0=9.23GiB
+[training-loss] step=1830/2000 total=0.009771 repr=0.062773 grid_kd=0.000795
+[train-state] step=1830/2000 epoch=9.683 grid_step=6/10 lambda_condition=0.14297 condition_grad_cos=0.0093 std_ratio=0.9210 sec_grad=0.0763 lr=3.530e-07 step_time=13.66s peak_cuda_rank0=9.23GiB
+[training-loss] step=1840/2000 total=0.009939 repr=0.062597 grid_kd=0.000872
+[train-state] step=1840/2000 epoch=9.735 grid_step=8/10 lambda_condition=0.14485 condition_grad_cos=0.0095 std_ratio=0.9199 sec_grad=0.0811 lr=3.470e-07 step_time=13.65s peak_cuda_rank0=9.23GiB
+[training-loss] step=1850/2000 total=0.010500 repr=0.062773 grid_kd=0.000834
+[train-state] step=1850/2000 epoch=9.788 grid_step=5/10 lambda_condition=0.15398 condition_grad_cos=0.0120 std_ratio=0.9200 sec_grad=0.0895 lr=3.413e-07 step_time=13.77s peak_cuda_rank0=9.23GiB
+[training-loss] step=1860/2000 total=0.009877 repr=0.062835 grid_kd=0.000683
+[train-state] step=1860/2000 epoch=9.841 grid_step=4/10 lambda_condition=0.14642 condition_grad_cos=0.0088 std_ratio=0.9192 sec_grad=0.0787 lr=3.360e-07 step_time=13.83s peak_cuda_rank0=9.23GiB
+[training-loss] step=1870/2000 total=0.010064 repr=0.062773 grid_kd=0.000796
+[train-state] step=1870/2000 epoch=9.894 grid_step=7/10 lambda_condition=0.14763 condition_grad_cos=0.0071 std_ratio=0.9211 sec_grad=0.0840 lr=3.311e-07 step_time=13.84s peak_cuda_rank0=9.23GiB
+[training-loss] step=1880/2000 total=0.010597 repr=0.063066 grid_kd=0.000760
+[train-state] step=1880/2000 epoch=9.947 grid_step=3/10 lambda_condition=0.15600 condition_grad_cos=0.0103 std_ratio=0.9199 sec_grad=0.0889 lr=3.265e-07 step_time=13.95s peak_cuda_rank0=9.23GiB
+[training-loss] step=1890/2000 total=0.010651 repr=0.062871 grid_kd=0.000809
+[train-state] step=1890/2000 epoch=10.000 grid_step=3/10 lambda_condition=0.15654 condition_grad_cos=0.0111 std_ratio=0.9188 sec_grad=0.0843 lr=3.223e-07 step_time=13.36s peak_cuda_rank0=9.23GiB
+[training-loss] step=1900/2000 total=0.010104 repr=0.062746 grid_kd=0.000718
+[train-state] step=1900/2000 epoch=10.053 grid_step=3/10 lambda_condition=0.14962 condition_grad_cos=0.0099 std_ratio=0.9197 sec_grad=0.0747 lr=3.184e-07 step_time=13.83s peak_cuda_rank0=9.23GiB
+[training-loss] step=1910/2000 total=0.010464 repr=0.062757 grid_kd=0.000781
+[train-state] step=1910/2000 epoch=10.106 grid_step=9/10 lambda_condition=0.15439 condition_grad_cos=0.0100 std_ratio=0.9198 sec_grad=0.0992 lr=3.149e-07 step_time=13.80s peak_cuda_rank0=9.23GiB
+[training-loss] step=1920/2000 total=0.011282 repr=0.062592 grid_kd=0.000829
+[train-state] step=1920/2000 epoch=10.159 grid_step=3/10 lambda_condition=0.16702 condition_grad_cos=0.0117 std_ratio=0.9203 sec_grad=0.0884 lr=3.118e-07 step_time=13.79s peak_cuda_rank0=9.23GiB
+[training-loss] step=1930/2000 total=0.010526 repr=0.062484 grid_kd=0.000774
+[train-state] step=1930/2000 epoch=10.212 grid_step=7/10 lambda_condition=0.15609 condition_grad_cos=0.0106 std_ratio=0.9197 sec_grad=0.0867 lr=3.090e-07 step_time=13.78s peak_cuda_rank0=9.23GiB
+[training-loss] step=1940/2000 total=0.010689 repr=0.062822 grid_kd=0.000738
+[train-state] step=1940/2000 epoch=10.265 grid_step=6/10 lambda_condition=0.15841 condition_grad_cos=0.0111 std_ratio=0.9196 sec_grad=0.0883 lr=3.066e-07 step_time=13.85s peak_cuda_rank0=9.23GiB
+[training-loss] step=1950/2000 total=0.011116 repr=0.062647 grid_kd=0.000769
+[train-state] step=1950/2000 epoch=10.317 grid_step=3/10 lambda_condition=0.16519 condition_grad_cos=0.0084 std_ratio=0.9210 sec_grad=0.0828 lr=3.046e-07 step_time=13.68s peak_cuda_rank0=9.23GiB
+[training-loss] step=1960/2000 total=0.010652 repr=0.062704 grid_kd=0.000821
+[train-state] step=1960/2000 epoch=10.370 grid_step=1/10 lambda_condition=0.15678 condition_grad_cos=0.0088 std_ratio=0.9201 sec_grad=0.0827 lr=3.030e-07 step_time=13.75s peak_cuda_rank0=9.23GiB
+[training-loss] step=1970/2000 total=0.010644 repr=0.062659 grid_kd=0.000852
+[train-state] step=1970/2000 epoch=10.423 grid_step=5/10 lambda_condition=0.15625 condition_grad_cos=0.0101 std_ratio=0.9201 sec_grad=0.0829 lr=3.017e-07 step_time=13.74s peak_cuda_rank0=9.23GiB
+[training-loss] step=1980/2000 total=0.010778 repr=0.062619 grid_kd=0.000825
+[train-state] step=1980/2000 epoch=10.476 grid_step=9/10 lambda_condition=0.15901 condition_grad_cos=0.0111 std_ratio=0.9209 sec_grad=0.0847 lr=3.007e-07 step_time=13.64s peak_cuda_rank0=9.23GiB
+[training-loss] step=1990/2000 total=0.010394 repr=0.062284 grid_kd=0.000730
+[train-state] step=1990/2000 epoch=10.529 grid_step=2/10 lambda_condition=0.15514 condition_grad_cos=0.0082 std_ratio=0.9217 sec_grad=0.0788 lr=3.002e-07 step_time=13.87s peak_cuda_rank0=9.23GiB
+[training-loss] step=2000/2000 total=0.010511 repr=0.062496 grid_kd=0.000812
+[train-state] step=2000/2000 epoch=10.582 grid_step=1/10 lambda_condition=0.15520 condition_grad_cos=0.0083 std_ratio=0.9209 sec_grad=0.0906 lr=3.000e-07 step_time=14.11s peak_cuda_rank0=9.23GiB

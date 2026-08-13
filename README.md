@@ -26,7 +26,7 @@ Action Expert → 36-step action chunk
 - `LAP6 → LaWM` 保留已验证的 latent-action 分支。
 - `SEC284` 是计划中与 LAP6 并行的单任务专用模块，以三视角 DINO latent 为动态输入，以 284 个 learned queries 固化任务先验，输出与官方 VLM condition 同形状的 `[B,284,768]` hidden state。
 - SEC284 不读取 EEF、`z_lap` 或 LAP6 token；EEF 只进入 Action Expert 的 proprioception 通道。
-- SEC284-L 已完成 3000-step 固定指令 VLM condition 蒸馏；当前进入冻结 LAP6、LaWM 与 Action Expert 的第一阶段行为对齐。SEC284 输入仍只有三视角 DINO latent，action 只做 flow/velocity 监督，不进入 SEC284。
+- SEC284-L 已完成 3000-step 固定指令 VLM condition 蒸馏；冻结 Expert 的 behavior-KD、output-primary inference-grid KD 和 Expert-only grid-KD 也已完成。当前经验上的 Expert best 是 500 step，但 clean 10x 仍为 `0/10`，不能按 cosine 或 train loss 宣称闭环成功。
 
 ## 当前进展
 
@@ -37,12 +37,16 @@ Action Expert → 36-step action chunk
 | T7 LAP10V3 + Expert | 284 token + Expert 联合训练 | `4/10` | 当前最佳无 VLM baseline |
 | T8 AR-2000 | 真实 action 监督 | `1/10` | 离线 loss 改善未转化为闭环改善 |
 | T9 FlowOnly-1000 | 只训练 Expert，仅官方 flow loss | `1/6` | 未超过 T7 同 seed 的 `2/6` |
+| SEC284 表征蒸馏 | 三视角 DINO → `[B,284,768]` | cosine `0.955959`；dynamic R² `0.724421` | 公共语义接近，但动态残差仍有缺口 |
+| SEC284 frozen behavior-KD | 冻结 LAP6/LaWM/Expert，只更新 SEC284 | batch std ratio 约 `0.924` | 行为代理改善，未证明闭环 |
+| SEC284 output/grid-KD | 分别更新 SEC284 或 Expert 的 inference-grid velocity | 500-step 经验 best；clean `0/10` | teacher-forcing loss 与闭环存在 mismatch |
 
 训练 loss、token MSE 和 action MAE 只作为离线诊断；最终指标是固定 seed 和 policy flow noise 的 RoboTwin 闭环成功率。
 
 ## 项目文档
 
 - [项目总览](docs/PROJECT_OVERVIEW_ZH.md)
+- [SEC284 当前状态与原始证据索引（2026-08-13）](docs/SEC284_CURRENT_STATUS_2026-08-13_ZH.md)
 - [SEC284-L：VLM condition 蒸馏与冻结 Expert 联合训练设计](docs/VLM_REPLACEMENT_JOINT_TRAINING_DESIGN_ZH.md)
 - [实验时间线](timeline.md)
 - [LAP10V3 实验总账本](docs/LAP10V3_EXPERIMENT_LEDGER_ZH.md)
@@ -60,7 +64,7 @@ examples/Robotwin/                RoboTwin bridge 与闭环评估接口
 docs/                             训练方案、交付文档和实验账本
 ```
 
-Checkpoint、数据集、DINO/Qwen 权重、feature cache、日志和 RoboTwin 视频不存储在 Git 仓库中。
+模型 checkpoint、数据集、DINO/Qwen 权重、feature cache、视频和二进制 trace 仍不存储在 Git 仓库中；本次更新将可审计的 SEC284 训练日志、评测日志、JSON/JSONL、`meta.json` 和 `_result.txt` 按原路径保留在仓库中。原始证据清单见 [SEC284 当前状态](docs/SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。
 
 ## 原始 LaWAM
 

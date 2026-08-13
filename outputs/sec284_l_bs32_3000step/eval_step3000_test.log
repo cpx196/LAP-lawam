@@ -1,0 +1,39 @@
+{
+  "split": "test",
+  "samples": 1749,
+  "checkpoint": "/data/pxchen/LaWAM/outputs/sec284_l_bs32_3000step/step-003000.pt",
+  "aggregate": {
+    "raw_mse": 0.06077715662707936,
+    "whitened_mse": 0.025876116809494296,
+    "token_cosine": 0.9559591545453406,
+    "shuffle_teacher_mse": 0.38741440519801273,
+    "dynamic_r2": 0.7244213918401365,
+    "teacher_cross_sample_std_rms": 0.4666751838397,
+    "student_cross_sample_std_rms": 0.4060539343772696,
+    "student_teacher_std_ratio": 0.8700996934020527
+  },
+  "domains": {
+    "randomized": {
+      "raw_mse": 0.06088270221717973,
+      "whitened_mse": 0.025923773391231735,
+      "token_cosine": 0.955879779492921,
+      "shuffle_teacher_mse": 0.38761023017875057
+    },
+    "clean": {
+      "raw_mse": 0.060129235943361205,
+      "whitened_mse": 0.025583563752624452,
+      "token_cosine": 0.9564464201732558,
+      "shuffle_teacher_mse": 0.3862122796019729
+    }
+  },
+  "view_ablation_raw_mse": {
+    "main": 0.18005127626326917,
+    "left": 0.10983833200748203,
+    "right": 0.1118010712596878
+  },
+  "mean_only_baseline_mse": 0.2205438115567463,
+  "variance_weight_range": [
+    0.25,
+    4.0
+  ]
+}

@@ -1,0 +1,46 @@
+/home/pxchen/miniconda3/envs/robotwin/lib/python3.10/site-packages/sapien/__init__.py:2: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+*** framework: LaWAM, data_mix: robotwin_eef_30hz, robotwin_mode: eef, unnorm_key: agilex, use_state: False, image_size: [256, 256], action_hz: 30.0, replan_steps: 36, action_ensemble: False, action_ensemble_alpha: 0.0, action_reorder: None, embodiment_id: 1, env_action_type: ee, state_gripper_indices: (7, 15), passthrough_indices: (3, 4, 5, 6, 11, 12, 13, 14), action_binary_indices: (), action_invert_indices: (7, 15), ***
+============= Config =============
+
+Messy Table: False
+Random Background: False
+Random Light: False
+Random Table Height: 0
+Random Head Camera Distance: 0
+Head Camera Config: D435
+Wrist Camera Config: D435
+
+==================================
+skip_get_obs_within_replan: True
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/1 => 0.0%, progress: 1/10, current seed: 100002
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/2 => 0.0%, progress: 2/10, current seed: 100005
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/3 => 0.0%, progress: 3/10, current seed: 100006
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/4 => 0.0%, progress: 4/10, current seed: 100007
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/5 => 0.0%, progress: 5/10, current seed: 100008
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/6 => 0.0%, progress: 6/10, current seed: 100009
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/7 => 0.0%, progress: 7/10, current seed: 100010
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/8 => 0.0%, progress: 8/10, current seed: 100011
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/9 => 0.0%, progress: 9/10, current seed: 100013
+
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_expert_step500_clean10
+Success rate: 0/10 => 0.0%, progress: 10/10, current seed: 100015
+
+Data has been saved to /data/pxchen/LaWAM/results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/_result.txt

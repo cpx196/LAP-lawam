@@ -1,0 +1,88 @@
+{
+  "task_name": "move_pillbottle_pad",
+  "task_config": "demo_clean",
+  "n_episodes": 10,
+  "num_slots": 1,
+  "successes": 0,
+  "success_rate": 0.0,
+  "elapsed_sec": 876.6761622428894,
+  "skip_get_obs_within_replan": true,
+  "model_queries": 120,
+  "cached_action_hits": 3880,
+  "obs_fetch_count": 120,
+  "obs_skip_count": 3880,
+  "obs_wait_sec": 16.857578607276082,
+  "infer_wait_sec": 22.55861299112439,
+  "episodes": [
+    {
+      "slot_id": 0,
+      "episode_id": 0,
+      "seed": 100002,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 1,
+      "seed": 100005,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 2,
+      "seed": 100006,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 3,
+      "seed": 100007,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 4,
+      "seed": 100008,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 5,
+      "seed": 100009,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 6,
+      "seed": 100010,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 7,
+      "seed": 100011,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 8,
+      "seed": 100013,
+      "success": false,
+      "steps": 400
+    },
+    {
+      "slot_id": 0,
+      "episode_id": 9,
+      "seed": 100015,
+      "success": false,
+      "steps": 400
+    }
+  ]
+}

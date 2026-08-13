@@ -1,0 +1,114 @@
+W0811 22:30:17.731000 2424262 site-packages/torch/distributed/run.py:774] 
+W0811 22:30:17.731000 2424262 site-packages/torch/distributed/run.py:774] *****************************************
+W0811 22:30:17.731000 2424262 site-packages/torch/distributed/run.py:774] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0811 22:30:17.731000 2424262 site-packages/torch/distributed/run.py:774] *****************************************
+08/11 [22:30:27] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/11 [22:30:27] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/11 [22:30:28] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/11 [22:30:29] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+[data] full_samples=24,140 world=4 local_batch=32 grid_cache=cache/sec284_task14_inference_grid/train
+[model] trainable=SEC284(76,624,896) frozen=LAP6,LaWM,ActionExpert
+[training-loss] step=1/1000 total=0.049155 repr=0.049028 grid_kd=0.004403
+[train-state] step=1/1000 grid_step=1/10 lambda_grid=0.02879 condition_grad_cos=0.0079 sec_grad=0.0647 lr=1.200e-07 step_time=15.49s peak_cuda_rank0=8.59GiB
+[training-loss] step=10/1000 total=0.048754 repr=0.048624 grid_kd=0.004117
+[train-state] step=10/1000 grid_step=3/10 lambda_grid=0.03161 condition_grad_cos=0.0085 sec_grad=0.0571 lr=6.600e-07 step_time=14.23s peak_cuda_rank0=9.18GiB
+[training-loss] step=20/1000 total=0.049033 repr=0.048916 grid_kd=0.002788
+[train-state] step=20/1000 grid_step=6/10 lambda_grid=0.04258 condition_grad_cos=0.0068 sec_grad=0.0530 lr=1.260e-06 step_time=13.47s peak_cuda_rank0=9.18GiB
+[training-loss] step=30/1000 total=0.048490 repr=0.048340 grid_kd=0.003541
+[train-state] step=30/1000 grid_step=6/10 lambda_grid=0.04280 condition_grad_cos=0.0108 sec_grad=0.0596 lr=1.860e-06 step_time=13.42s peak_cuda_rank0=9.18GiB
+[training-loss] step=40/1000 total=0.048721 repr=0.048563 grid_kd=0.004387
+[train-state] step=40/1000 grid_step=10/10 lambda_grid=0.03627 condition_grad_cos=0.0076 sec_grad=0.0574 lr=2.460e-06 step_time=13.80s peak_cuda_rank0=9.18GiB
+[training-loss] step=50/1000 total=0.048836 repr=0.048722 grid_kd=0.003524
+[train-state] step=50/1000 grid_step=6/10 lambda_grid=0.03265 condition_grad_cos=0.0112 sec_grad=0.0573 lr=3.000e-06 step_time=14.09s peak_cuda_rank0=9.18GiB
+[training-loss] step=60/1000 total=0.049074 repr=0.048950 grid_kd=0.003024
+[train-state] step=60/1000 grid_step=10/10 lambda_grid=0.04095 condition_grad_cos=0.0082 sec_grad=0.0553 lr=2.999e-06 step_time=14.74s peak_cuda_rank0=9.18GiB
+[training-loss] step=70/1000 total=0.048779 repr=0.048637 grid_kd=0.003430
+[train-state] step=70/1000 grid_step=3/10 lambda_grid=0.04174 condition_grad_cos=0.0125 sec_grad=0.0675 lr=2.997e-06 step_time=12.77s peak_cuda_rank0=9.18GiB
+[training-loss] step=80/1000 total=0.048427 repr=0.048283 grid_kd=0.003445
+[train-state] step=80/1000 grid_step=6/10 lambda_grid=0.04209 condition_grad_cos=0.0115 sec_grad=0.0630 lr=2.993e-06 step_time=11.74s peak_cuda_rank0=9.18GiB
+[training-loss] step=90/1000 total=0.048591 repr=0.048444 grid_kd=0.003359
+[train-state] step=90/1000 grid_step=6/10 lambda_grid=0.04404 condition_grad_cos=0.0142 sec_grad=0.0658 lr=2.988e-06 step_time=12.98s peak_cuda_rank0=9.18GiB
+[training-loss] step=100/1000 total=0.049266 repr=0.049098 grid_kd=0.003881
+[train-state] step=100/1000 grid_step=4/10 lambda_grid=0.04347 condition_grad_cos=0.0128 sec_grad=0.0657 lr=2.982e-06 step_time=14.08s peak_cuda_rank0=9.18GiB
+[training-loss] step=110/1000 total=0.048837 repr=0.048698 grid_kd=0.003555
+[train-state] step=110/1000 grid_step=10/10 lambda_grid=0.03927 condition_grad_cos=0.0099 sec_grad=0.0636 lr=2.974e-06 step_time=13.21s peak_cuda_rank0=9.18GiB
+[training-loss] step=120/1000 total=0.048766 repr=0.048635 grid_kd=0.003426
+[train-state] step=120/1000 grid_step=2/10 lambda_grid=0.03848 condition_grad_cos=0.0113 sec_grad=0.0657 lr=2.964e-06 step_time=17.21s peak_cuda_rank0=9.18GiB
+[training-loss] step=130/1000 total=0.049203 repr=0.049047 grid_kd=0.004056
+[train-state] step=130/1000 grid_step=2/10 lambda_grid=0.03871 condition_grad_cos=0.0084 sec_grad=0.0601 lr=2.953e-06 step_time=16.44s peak_cuda_rank0=9.18GiB
+[training-loss] step=140/1000 total=0.049083 repr=0.048936 grid_kd=0.004171
+[train-state] step=140/1000 grid_step=4/10 lambda_grid=0.03521 condition_grad_cos=0.0090 sec_grad=0.0640 lr=2.941e-06 step_time=15.42s peak_cuda_rank0=9.18GiB
+[training-loss] step=150/1000 total=0.049305 repr=0.049184 grid_kd=0.003496
+[train-state] step=150/1000 grid_step=9/10 lambda_grid=0.03487 condition_grad_cos=0.0083 sec_grad=0.0628 lr=2.927e-06 step_time=14.78s peak_cuda_rank0=9.18GiB
+[training-loss] step=160/1000 total=0.048772 repr=0.048641 grid_kd=0.003572
+[train-state] step=160/1000 grid_step=7/10 lambda_grid=0.03696 condition_grad_cos=0.0089 sec_grad=0.0572 lr=2.912e-06 step_time=15.88s peak_cuda_rank0=9.18GiB
+[training-loss] step=170/1000 total=0.049057 repr=0.048895 grid_kd=0.004588
+[train-state] step=170/1000 grid_step=6/10 lambda_grid=0.03519 condition_grad_cos=0.0049 sec_grad=0.0599 lr=2.895e-06 step_time=15.71s peak_cuda_rank0=9.18GiB
+[training-loss] step=180/1000 total=0.048979 repr=0.048851 grid_kd=0.003304
+[train-state] step=180/1000 grid_step=1/10 lambda_grid=0.03874 condition_grad_cos=0.0083 sec_grad=0.0570 lr=2.877e-06 step_time=13.45s peak_cuda_rank0=9.18GiB
+[training-loss] step=190/1000 total=0.048661 repr=0.048529 grid_kd=0.003145
+[train-state] step=190/1000 grid_step=2/10 lambda_grid=0.04242 condition_grad_cos=0.0100 sec_grad=0.0654 lr=2.858e-06 step_time=15.40s peak_cuda_rank0=9.18GiB
+[training-loss] step=200/1000 total=0.048650 repr=0.048505 grid_kd=0.003266
+[train-state] step=200/1000 grid_step=1/10 lambda_grid=0.04453 condition_grad_cos=0.0125 sec_grad=0.0672 lr=2.837e-06 step_time=14.20s peak_cuda_rank0=9.18GiB
+[training-loss] step=210/1000 total=0.048308 repr=0.048163 grid_kd=0.003345
+[train-state] step=210/1000 grid_step=10/10 lambda_grid=0.04347 condition_grad_cos=0.0048 sec_grad=0.0608 lr=2.815e-06 step_time=15.43s peak_cuda_rank0=9.18GiB
+[training-loss] step=220/1000 total=0.048565 repr=0.048425 grid_kd=0.003516
+[train-state] step=220/1000 grid_step=10/10 lambda_grid=0.03995 condition_grad_cos=0.0120 sec_grad=0.0570 lr=2.792e-06 step_time=16.67s peak_cuda_rank0=9.18GiB
+[training-loss] step=230/1000 total=0.048950 repr=0.048806 grid_kd=0.003587
+[train-state] step=230/1000 grid_step=2/10 lambda_grid=0.04030 condition_grad_cos=0.0099 sec_grad=0.0624 lr=2.768e-06 step_time=12.95s peak_cuda_rank0=9.18GiB
+[training-loss] step=240/1000 total=0.048721 repr=0.048581 grid_kd=0.003308
+[train-state] step=240/1000 grid_step=6/10 lambda_grid=0.04262 condition_grad_cos=0.0099 sec_grad=0.0582 lr=2.742e-06 step_time=15.16s peak_cuda_rank0=9.18GiB
+[training-loss] step=250/1000 total=0.048832 repr=0.048698 grid_kd=0.003317
+[train-state] step=250/1000 grid_step=6/10 lambda_grid=0.04057 condition_grad_cos=0.0100 sec_grad=0.0642 lr=2.715e-06 step_time=16.90s peak_cuda_rank0=9.18GiB
+[training-loss] step=260/1000 total=0.048851 repr=0.048698 grid_kd=0.003934
+[train-state] step=260/1000 grid_step=3/10 lambda_grid=0.03908 condition_grad_cos=0.0125 sec_grad=0.0575 lr=2.687e-06 step_time=16.02s peak_cuda_rank0=9.18GiB
+[training-loss] step=270/1000 total=0.048670 repr=0.048558 grid_kd=0.002622
+[train-state] step=270/1000 grid_step=7/10 lambda_grid=0.04314 condition_grad_cos=0.0089 sec_grad=0.0554 lr=2.658e-06 step_time=15.78s peak_cuda_rank0=9.18GiB
+[training-loss] step=280/1000 total=0.048574 repr=0.048420 grid_kd=0.003792
+[train-state] step=280/1000 grid_step=4/10 lambda_grid=0.04131 condition_grad_cos=0.0130 sec_grad=0.0653 lr=2.628e-06 step_time=17.11s peak_cuda_rank0=9.18GiB
+[training-loss] step=290/1000 total=0.049060 repr=0.048925 grid_kd=0.003013
+[train-state] step=290/1000 grid_step=3/10 lambda_grid=0.04503 condition_grad_cos=0.0089 sec_grad=0.0604 lr=2.597e-06 step_time=17.39s peak_cuda_rank0=9.18GiB
+[training-loss] step=300/1000 total=0.048666 repr=0.048514 grid_kd=0.003746
+[train-state] step=300/1000 grid_step=5/10 lambda_grid=0.04077 condition_grad_cos=0.0089 sec_grad=0.0568 lr=2.564e-06 step_time=16.62s peak_cuda_rank0=9.18GiB
+[training-loss] step=310/1000 total=0.049053 repr=0.048924 grid_kd=0.003219
+[train-state] step=310/1000 grid_step=3/10 lambda_grid=0.04017 condition_grad_cos=0.0109 sec_grad=0.0556 lr=2.531e-06 step_time=14.98s peak_cuda_rank0=9.18GiB
+[training-loss] step=320/1000 total=0.048593 repr=0.048444 grid_kd=0.003828
+[train-state] step=320/1000 grid_step=4/10 lambda_grid=0.03924 condition_grad_cos=0.0115 sec_grad=0.0582 lr=2.497e-06 step_time=16.15s peak_cuda_rank0=9.18GiB
+[training-loss] step=330/1000 total=0.048624 repr=0.048471 grid_kd=0.003851
+[train-state] step=330/1000 grid_step=7/10 lambda_grid=0.03968 condition_grad_cos=0.0114 sec_grad=0.0581 lr=2.461e-06 step_time=14.61s peak_cuda_rank0=9.18GiB
+[training-loss] step=340/1000 total=0.048818 repr=0.048693 grid_kd=0.002960
+[train-state] step=340/1000 grid_step=9/10 lambda_grid=0.04233 condition_grad_cos=0.0111 sec_grad=0.0572 lr=2.425e-06 step_time=13.86s peak_cuda_rank0=9.18GiB
+[training-loss] step=350/1000 total=0.048678 repr=0.048524 grid_kd=0.003637
+[train-state] step=350/1000 grid_step=1/10 lambda_grid=0.04246 condition_grad_cos=0.0119 sec_grad=0.0650 lr=2.388e-06 step_time=16.73s peak_cuda_rank0=9.18GiB
+[training-loss] step=360/1000 total=0.048803 repr=0.048671 grid_kd=0.003129
+[train-state] step=360/1000 grid_step=6/10 lambda_grid=0.04269 condition_grad_cos=0.0095 sec_grad=0.0588 lr=2.351e-06 step_time=16.26s peak_cuda_rank0=9.18GiB
+[training-loss] step=370/1000 total=0.049020 repr=0.048839 grid_kd=0.003991
+[train-state] step=370/1000 grid_step=10/10 lambda_grid=0.04556 condition_grad_cos=0.0070 sec_grad=0.0612 lr=2.312e-06 step_time=14.06s peak_cuda_rank0=9.18GiB
+[training-loss] step=380/1000 total=0.048586 repr=0.048449 grid_kd=0.003237
+[train-state] step=380/1000 grid_step=5/10 lambda_grid=0.04224 condition_grad_cos=0.0069 sec_grad=0.0568 lr=2.273e-06 step_time=13.32s peak_cuda_rank0=9.18GiB
+[training-loss] step=390/1000 total=0.048517 repr=0.048387 grid_kd=0.003359
+[train-state] step=390/1000 grid_step=2/10 lambda_grid=0.03870 condition_grad_cos=0.0087 sec_grad=0.0581 lr=2.233e-06 step_time=14.80s peak_cuda_rank0=9.18GiB
+[training-loss] step=400/1000 total=0.048714 repr=0.048570 grid_kd=0.003745
+[train-state] step=400/1000 grid_step=1/10 lambda_grid=0.03839 condition_grad_cos=0.0090 sec_grad=0.0638 lr=2.192e-06 step_time=16.39s peak_cuda_rank0=9.18GiB
+[training-loss] step=410/1000 total=0.048827 repr=0.048687 grid_kd=0.003770
+[train-state] step=410/1000 grid_step=5/10 lambda_grid=0.03734 condition_grad_cos=0.0084 sec_grad=0.0640 lr=2.151e-06 step_time=18.55s peak_cuda_rank0=9.18GiB
+[training-loss] step=420/1000 total=0.048725 repr=0.048597 grid_kd=0.003362
+[train-state] step=420/1000 grid_step=3/10 lambda_grid=0.03810 condition_grad_cos=0.0079 sec_grad=0.0563 lr=2.109e-06 step_time=17.49s peak_cuda_rank0=9.18GiB
+[training-loss] step=430/1000 total=0.048544 repr=0.048381 grid_kd=0.004742
+[train-state] step=430/1000 grid_step=4/10 lambda_grid=0.03435 condition_grad_cos=0.0113 sec_grad=0.0545 lr=2.067e-06 step_time=16.63s peak_cuda_rank0=9.18GiB
+[training-loss] step=440/1000 total=0.048758 repr=0.048637 grid_kd=0.003072
+[train-state] step=440/1000 grid_step=7/10 lambda_grid=0.03935 condition_grad_cos=0.0112 sec_grad=0.0559 lr=2.024e-06 step_time=17.37s peak_cuda_rank0=9.18GiB
+[training-loss] step=450/1000 total=0.048448 repr=0.048317 grid_kd=0.003032
+[train-state] step=450/1000 grid_step=2/10 lambda_grid=0.04337 condition_grad_cos=0.0110 sec_grad=0.0574 lr=1.981e-06 step_time=16.95s peak_cuda_rank0=9.18GiB
+[training-loss] step=460/1000 total=0.048522 repr=0.048372 grid_kd=0.003446
+[train-state] step=460/1000 grid_step=2/10 lambda_grid=0.04346 condition_grad_cos=0.0074 sec_grad=0.0541 lr=1.938e-06 step_time=17.01s peak_cuda_rank0=9.18GiB
+[training-loss] step=470/1000 total=0.048667 repr=0.048540 grid_kd=0.003129
+[train-state] step=470/1000 grid_step=3/10 lambda_grid=0.04078 condition_grad_cos=0.0093 sec_grad=0.0555 lr=1.894e-06 step_time=17.12s peak_cuda_rank0=9.18GiB
+[training-loss] step=480/1000 total=0.048683 repr=0.048549 grid_kd=0.003294
+[train-state] step=480/1000 grid_step=10/10 lambda_grid=0.04078 condition_grad_cos=0.0073 sec_grad=0.0607 lr=1.850e-06 step_time=17.20s peak_cuda_rank0=9.18GiB
+[training-loss] step=490/1000 total=0.048744 repr=0.048617 grid_kd=0.003083
+[train-state] step=490/1000 grid_step=10/10 lambda_grid=0.04131 condition_grad_cos=0.0109 sec_grad=0.0571 lr=1.806e-06 step_time=16.03s peak_cuda_rank0=9.18GiB

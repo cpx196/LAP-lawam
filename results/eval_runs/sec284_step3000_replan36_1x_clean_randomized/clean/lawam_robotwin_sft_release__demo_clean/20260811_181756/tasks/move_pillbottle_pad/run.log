@@ -1,0 +1,19 @@
+/home/pxchen/miniconda3/envs/robotwin/lib/python3.10/site-packages/sapien/__init__.py:2: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+*** framework: LaWAM, data_mix: robotwin_eef_30hz, robotwin_mode: eef, unnorm_key: agilex, use_state: False, image_size: [256, 256], action_hz: 30.0, replan_steps: 36, action_ensemble: False, action_ensemble_alpha: 0.0, action_reorder: None, embodiment_id: 1, env_action_type: ee, state_gripper_indices: (7, 15), passthrough_indices: (3, 4, 5, 6, 11, 12, 13, 14), action_binary_indices: (), action_invert_indices: (7, 15), ***
+============= Config =============
+
+Messy Table: False
+Random Background: False
+Random Light: False
+Random Table Height: 0
+Random Head Camera Distance: 0
+Head Camera Config: D435
+Wrist Camera Config: D435
+
+==================================
+skip_get_obs_within_replan: True
+move_pillbottle_pad | model2robotwin_interface | demo_clean | sec284_step3000_clean
+Success rate: 0/1 => 0.0%, progress: 1/1, current seed: 100002
+
+Data has been saved to /data/pxchen/LaWAM/results/eval_runs/sec284_step3000_replan36_1x_clean_randomized/clean/lawam_robotwin_sft_release__demo_clean/20260811_181756/tasks/move_pillbottle_pad/_result.txt

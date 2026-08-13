@@ -1,0 +1,25 @@
+{
+  "task_name": "move_pillbottle_pad",
+  "task_config": "demo_clean",
+  "n_episodes": 1,
+  "num_slots": 1,
+  "successes": 0,
+  "success_rate": 0.0,
+  "elapsed_sec": 209.72749638557434,
+  "skip_get_obs_within_replan": true,
+  "model_queries": 23,
+  "cached_action_hits": 777,
+  "obs_fetch_count": 23,
+  "obs_skip_count": 777,
+  "obs_wait_sec": 5.4725571144372225,
+  "infer_wait_sec": 4.990189598873258,
+  "episodes": [
+    {
+      "slot_id": 0,
+      "episode_id": 0,
+      "seed": 100002,
+      "success": false,
+      "steps": 800
+    }
+  ]
+}

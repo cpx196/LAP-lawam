@@ -437,7 +437,7 @@ starVLA/model/framework/vlas/flowmatching_expert.py
 - `flow_total_steps`；
 - `flow_step_offset`。
 
-### 7.3 当前配置
+### 7.3 2026-08-12 00:16 的历史快照（已完成）
 
 ```text
 tmux session: sec284_grid_1000
@@ -465,7 +465,7 @@ step_time=18.55s
 peak_cuda_rank0=9.18GiB
 ```
 
-注意：这是会继续变化的活动训练快照，不是最终结果。
+注意：这是当时的活动训练快照，已被后续 output-primary 2000-step 和 Expert-only 2000-step 结果 supersede；保留原值用于审计，不应再作为当前进度。
 
 ### 7.4 当前不能直接从 loss 得出的结论
 
@@ -495,7 +495,7 @@ peak_cuda_rank0=9.18GiB
 
 ### 8.1 先评估，不先凭曲线改方向
 
-对以下两个 checkpoint 使用完全相同的固定 held-out 样本：
+当时建议对以下两个 checkpoint 使用完全相同的固定 held-out 样本；该建议仍适用于当前 behavior-KD、output-primary 和 500-step Expert 候选：
 
 ```text
 baseline:
@@ -505,7 +505,7 @@ grid KD:
 outputs/sec284_inference_grid_kd_1000step/step-000250.pt
 ```
 
-若训练结束，再加 step-000500、000750、001000。
+后续应加入 output-primary 2000 和 Expert-only 500/1000/1500/2000。
 
 验证至少输出：
 
@@ -528,7 +528,7 @@ outputs/sec284_inference_grid_kd_1000step/step-000250.pt
 3. 记录并平衡每个 k，而不是完全随机混合后只看总均值；
 4. 为 grid branch 设置最低有效权重或先固定 lambda 做 ablation，确认自适应 lambda 没有把行为监督压得过小；
 5. 如果仍需 gripper sign loss，只使用小权重，并通过失败视频验证其必要性；
-6. 加固定 validation 和 best-checkpoint 选择，再决定是否延长到 2000/10000 step。
+6. 加固定 validation 和 best-checkpoint 选择，再决定是否继续训练。
 
 不建议在没有 fixed validation 的情况下仅因为 train loss 抖动就盲目扩到 1 万步。
 
@@ -672,11 +672,10 @@ timeline.md
 
 当前最需要用户/接手者做的决策不是“要不要直接全量解冻”，而是：
 
-1. 是否让当前 2000-step Expert grid KD 续训自然跑完；
-2. 是否立即补一个固定 held-out、按 k 拆分的验证脚本；
-3. 下一轮是否从 500-step best checkpoint 加入简单 anchor；
-4. 是否用 teacher 方差归一化替代手工 gripper 4x；
-5. grid checkpoint 只有在离线固定验证优于 baseline 后，是否再做同 seed 1+1 闭环。
+1. 立即补一个固定 held-out、按 k 拆分的验证脚本；
+2. 下一轮是否从 500-step 经验候选加入简单 anchor；
+3. 是否用 teacher 方差归一化替代手工 gripper 4x；
+4. grid checkpoint 只有在离线固定验证优于 baseline 后，是否再做同 seed 1+1 闭环。
 
 推荐优先级是：**固定验证 > 修正 loss/日志 > 1+1 闭环 > 扩大成功率测试 > 考虑解冻或长训**。
 
@@ -706,6 +705,8 @@ LR=1e-7, uniform inference-grid KD, enc_vlm frozen
 ```text
 step 1-500      mean grid_kd ≈ 0.000905
 step 501-1000   mean grid_kd ≈ 0.000861
+step 1001-1500  mean grid_kd ≈ 0.000893
+step 1501-2000  mean grid_kd ≈ 0.000871
 ```
 
 下降幅度很小且之后基本平台化。它不能保证 gripper 时序、接触、抬升和误差累积在真实 rollout 中变好。
@@ -752,9 +753,9 @@ tools/run_lap6_sec284_no_vlm_paired_1x.sh
 
 ### 14.4 后续建议
 
-1. 让当前 2000-step 续训自然完成，不把 1000-step 当作部署版本；
-2. 对 1500/2000 checkpoint 继续只跑固定 clean 1+1，并和 500-step 视频对照；
-3. 若后续 checkpoint 仍不如 500，下一轮从 500 重启，优先尝试一个简单的 500-step anchor，而不是继续增加多项 loss；
+1. 不把任何 grid checkpoint 按训练 loss 直接标成部署成功；
+2. 以 500-step 作为经验候选，对比固定 held-out 和同 seed 闭环；
+3. 若后续 checkpoint 仍不如 500，下一轮从 500 重启，优先尝试一个简单的 500-step anchor；
 4. 增加 held-out、按 `k=0..9` 拆分的 grid validation，并单独记录 gripper/抬升相关动作误差。
 
 ## 15. 2026-08-12 当前进度：500-step clean 10x
@@ -773,9 +774,22 @@ timestamp: 20260812_162222
 
 ```text
 results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/summary.json
-results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/episode*.mp4
+results/eval_runs/sec284_expert_grid_kd_step500_clean10/clean/lawam_robotwin_sft_release__demo_clean/20260812_162222/tasks/move_pillbottle_pad/episode*.mp4  # 本地视频，未提交
 ```
 
 ---
 
-本文件记录的是 2026-08-12 16:40 HKT 的状态快照。训练进程已结束；如需继续实验，应从固定验证和 500-step checkpoint 对照开始。
+## 16. 2026-08-13 当前归档
+
+### 16.1 当前训练和评测状态
+
+- `sec284_output_kd_primary_2000step` 已完成；末段 `repr=0.062496`、`grid_kd=0.000812`、`std_ratio=0.9209`。
+- Expert-only grid-KD 已完成总计 2000 step；500/1000/1500/2000 clean 1+1 均为 `0/1`，500-step clean 10x 为 `0/10`。
+- 纯表示 held-out 仍以 `cosine=0.955959`、`dynamic R²=0.724421`、`std ratio=0.8701` 为唯一完整 test 口径；新下游 checkpoint 尚未完成同口径 held-out。
+- 2026-08-13 在同一 randomized seed `100001` 下，原始 VLM 与 LAP6+官方 VLM 均成功（`1/1`，139/141 steps）；这是环境/主干对照，不是 SEC284 成功结果。
+
+### 16.2 原始证据提交范围
+
+本次同步会将 SEC284 的训练日志、评测日志、JSON/JSONL、`meta.json`、`run.log` 和 `_result.txt` 按原路径加入 Git；视频、checkpoint、feature/teacher cache、二进制 shadow trace 和图片不加入。完整路径索引见 [SEC284 当前状态与原始证据索引](SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。
+
+本文件记录的是 2026-08-13 的最新交接状态；训练进程已结束，后续应从固定 held-out 验证和 500-step 对照开始。

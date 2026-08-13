@@ -641,7 +641,7 @@ def run_batched_eval(usr_args: dict[str, Any]) -> int:
         outstanding_episodes = 0
         completed_episodes = 0
         success_count = 0
-        next_seed = 100000 * (1 + seed)
+        next_seed = int(os.getenv("ROBOTWIN_START_SEED", 100000 * (1 + seed)))
         pending_examples: dict[int, dict[str, Any]] = {}
         pending_observation_requests: dict[int, ObservationRequest] = {}
         episode_records: list[dict[str, Any]] = []

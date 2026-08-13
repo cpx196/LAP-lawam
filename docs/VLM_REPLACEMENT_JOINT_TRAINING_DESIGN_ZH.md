@@ -1,8 +1,8 @@
 # SEC284-L：VLM Condition 蒸馏与冻结 Expert 联合训练设计
 
-> 状态：纯表示蒸馏已完成；冻结 Expert 第一阶段已实现并准备训练
+> 状态：纯表示蒸馏、冻结 Expert behavior-KD、output-primary inference-grid KD 和 Expert-only grid-KD 均已完成；当前进入固定 held-out 验证阶段
 >
-> 更新：2026-08-11（Asia/Hong_Kong）
+> 更新：2026-08-13（Asia/Hong_Kong）
 >
 > 当前任务：RoboTwin `move_pillbottle_pad`（任务 14）
 >
@@ -706,3 +706,23 @@ L_total = L_repr + lambda_grid * L_grid
 单步 smoke 已通过：`grid_kd=0.007251`、自适应 `lambda_grid=0.635`、峰值显存
 `3.02 GiB`（不含卡上其他进程），证明可反传且没有 OOM。当前仅 9 个重规划点，正式
 训练前应扩充多 seed 的成功 teacher rollout cache，避免对 1+1 轨迹记忆化。
+
+## 16. 2026-08-13 完成状态与验证边界
+
+本设计中的表示蒸馏和下游训练均已实际完成，但训练日志不能替代固定验证：
+
+| 阶段 | checkpoint / 日志 | 当前证据 |
+|---|---|---|
+| 纯表示蒸馏 | `outputs/sec284_l_bs32_3000step/` | held-out cosine `0.955959`、dynamic R² `0.724421`、std ratio `0.8701` |
+| Frozen behavior-KD | `outputs/sec284_frozen_expert_behavior_kd_2000step/` | 末段 batch std ratio `0.9241`，behavior KD `0.002951` |
+| Output-primary grid-KD | `outputs/sec284_output_kd_primary_2000step/` | 末段 `repr=0.062496`、`grid_kd=0.000812`、std ratio `0.9209` |
+| Expert-only grid-KD | `outputs/sec284_expert_grid_kd_2000step/` | 500→2000 已完成；500-step 为经验候选 |
+
+Expert-only checkpoint 的固定 clean 结果为：500/1000/1500/2000 均为 `0/1`，500-step 额外 clean 10x 为 `0/10`。因此本设计不把任何一个 checkpoint 标记为“闭环成功”。当前必须补齐：
+
+1. behavior-KD、output-primary 和 500-step Expert 的同一 held-out 样本评估；
+2. 按 `k=0..9` 拆分的 velocity MSE、XYZ、gripper 和 flow 后段误差；
+3. dynamic R²、std ratio、shuffle-teacher 和 mean-only baseline；
+4. 同一 seed、同一 `replan=36` 的 clean/randomized 闭环。
+
+原始训练日志、评测日志、JSON/JSONL、`meta.json`、`run.log` 和 `_result.txt` 已按原路径归档；视频、checkpoint、cache 和二进制 trace 不提交。完整索引见 [SEC284 当前状态与原始证据索引](SEC284_CURRENT_STATUS_2026-08-13_ZH.md)。

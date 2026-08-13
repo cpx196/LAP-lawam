@@ -1,0 +1,99 @@
+[launcher] physical_gpus=1,3,4,5 nproc=4 local_batch=32 global_batch=128
+08/11 [20:19:41] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+08/11 [20:19:41] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 383, in <module>
+[rank3]:     main()
+[rank3]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 180, in main
+[rank3]:     rank, world, local_rank, device = setup_distributed()
+[rank3]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 93, in setup_distributed
+[rank3]:     dist.init_process_group("nccl")
+[rank3]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank3]:     return func(*args, **kwargs)
+[rank3]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 95, in wrapper
+[rank3]:     func_return = func(*args, **kwargs)
+[rank3]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1646, in init_process_group
+[rank3]:     raise ValueError("trying to initialize the default process group twice!")
+[rank3]: ValueError: trying to initialize the default process group twice!
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 383, in <module>
+[rank1]:     main()
+[rank1]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 180, in main
+[rank1]:     rank, world, local_rank, device = setup_distributed()
+[rank1]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 93, in setup_distributed
+[rank1]:     dist.init_process_group("nccl")
+[rank1]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank1]:     return func(*args, **kwargs)
+[rank1]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 95, in wrapper
+[rank1]:     func_return = func(*args, **kwargs)
+[rank1]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1646, in init_process_group
+[rank1]:     raise ValueError("trying to initialize the default process group twice!")
+[rank1]: ValueError: trying to initialize the default process group twice!
+08/11 [20:19:42] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 383, in <module>
+[rank0]:     main()
+[rank0]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 180, in main
+[rank0]:     rank, world, local_rank, device = setup_distributed()
+[rank0]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 93, in setup_distributed
+[rank0]:     dist.init_process_group("nccl")
+[rank0]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 95, in wrapper
+[rank0]:     func_return = func(*args, **kwargs)
+[rank0]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1646, in init_process_group
+[rank0]:     raise ValueError("trying to initialize the default process group twice!")
+[rank0]: ValueError: trying to initialize the default process group twice!
+08/11 [20:19:42] INFO     | >> PyTorch version 2.8.0+cu126          config.py:54
+                          available.                                            
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 383, in <module>
+[rank2]:     main()
+[rank2]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 180, in main
+[rank2]:     rank, world, local_rank, device = setup_distributed()
+[rank2]:   File "/data/pxchen/LaWAM/tools/train_sec284_frozen_expert_ddp.py", line 93, in setup_distributed
+[rank2]:     dist.init_process_group("nccl")
+[rank2]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank2]:     return func(*args, **kwargs)
+[rank2]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 95, in wrapper
+[rank2]:     func_return = func(*args, **kwargs)
+[rank2]:   File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1646, in init_process_group
+[rank2]:     raise ValueError("trying to initialize the default process group twice!")
+[rank2]: ValueError: trying to initialize the default process group twice!
+[rank0]:[W811 20:19:44.140555253 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0811 20:19:44.201000 1924678 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 1924805 closing signal SIGTERM
+W0811 20:19:44.202000 1924678 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 1924806 closing signal SIGTERM
+W0811 20:19:44.203000 1924678 site-packages/torch/distributed/elastic/multiprocessing/api.py:900] Sending process 1924807 closing signal SIGTERM
+E0811 20:19:44.787000 1924678 site-packages/torch/distributed/elastic/multiprocessing/api.py:874] failed (exitcode: 1) local_rank: 3 (pid: 1924808) of binary: /home/pxchen/miniconda3/envs/flashwam/bin/python3.10
+Traceback (most recent call last):
+  File "/home/pxchen/miniconda3/envs/flashwam/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+  File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 357, in wrapper
+    return f(*args, **kwargs)
+  File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/run.py", line 901, in main
+    run(args)
+  File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/run.py", line 892, in run
+    elastic_launch(
+  File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 143, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/pxchen/miniconda3/envs/flashwam/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 277, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+tools/train_sec284_frozen_expert_ddp.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-08-11_20:19:44
+  host      : user-ESC8000A-E11
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 1924808)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

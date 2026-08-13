@@ -151,3 +151,20 @@ TurboVLA 结果文件中记录的 instruction type 为 `seen`。该结果是已�
 - TurboVLA 5-task result logs：`/data/pxchen/TurboVLA/robotwin_eval_5plus5.log`、`/data/pxchen/TurboVLA/robotwin_eval_5plus5_release_policy.log`
 - TurboVLA randomized result files：`/data/pxchen/RoboTwin/eval_result/turbovla_random_5task/`
 - LingBot-VA old randomized logs：`/data/pxchen/lingbot-va/results/lingbotva_robotwin_same4_random_20260812/*.log`
+
+## 2026-08-13：LaWAM 同任务 randomized seed 对照补充
+
+这不是外部模型结果，而是为 SEC284 诊断补充的同任务控制实验。在 `move_pillbottle_pad`、`demo_randomized`、seed `100001`、`replan=36` 下：
+
+| 变体 | 结果 | steps |
+|---|---:|---:|
+| 原始 LaWAM（官方 VLM） | `1/1` | 139 |
+| LAP6 + 官方 VLM | `1/1` | 141 |
+
+结果原始文件位于：
+
+```text
+results/eval_runs/sec284_failed_random_seed100001_original_vs_lap6_1x_20260813/
+```
+
+该对照只说明这个 randomized seed 和主干链路具备成功可能，不应与 SEC284 no-VLM 的 `0/10` clean 结果合并成同一模型成功率。
